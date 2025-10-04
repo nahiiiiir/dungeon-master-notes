@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CampaignCard } from "@/components/CampaignCard";
 import { CreateCampaignDialog } from "@/components/CreateCampaignDialog";
 import { Scroll, Sparkles } from "lucide-react";
@@ -15,6 +16,7 @@ interface Campaign {
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<Campaign[]>([
     {
       id: "1",
@@ -103,7 +105,7 @@ const Index = () => {
               <CampaignCard
                 key={campaign.id}
                 campaign={campaign}
-                onClick={() => console.log("Ver campaña:", campaign.id)}
+                onClick={() => navigate(`/campaign/${campaign.id}`)}
               />
             ))}
           </div>

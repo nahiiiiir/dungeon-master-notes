@@ -2,9 +2,21 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CreateEncounterDialog } from "@/components/CreateEncounterDialog";
+import { CreatePlayerDialog } from "@/components/CreatePlayerDialog";
 import { EncounterCard } from "@/components/EncounterCard";
-import { ArrowLeft, Users, Calendar, Scroll, Sparkles } from "lucide-react";
+import { PlayerCard } from "@/components/PlayerCard";
+import { ArrowLeft, Users, Calendar, Scroll, Sparkles, Swords } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface Player {
+  id: string;
+  playerName: string;
+  characterName: string;
+  race: string;
+  class: string;
+  level: number;
+}
 
 interface Encounter {
   id: string;
@@ -72,6 +84,25 @@ const CampaignDetails = () => {
     },
   ]);
 
+  const [players, setPlayers] = useState<Player[]>([
+    {
+      id: "1",
+      playerName: "María García",
+      characterName: "Elara Luzdestrella",
+      race: "Elfa",
+      class: "Maga",
+      level: 5,
+    },
+    {
+      id: "2",
+      playerName: "Carlos Ruiz",
+      characterName: "Thorin Martillo de Guerra",
+      race: "Enano",
+      class: "Guerrero",
+      level: 5,
+    },
+  ]);
+
   if (!campaign) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -101,6 +132,20 @@ const CampaignDetails = () => {
       }),
     };
     setEncounters([encounter, ...encounters]);
+  };
+
+  const handleCreatePlayer = (newPlayer: {
+    playerName: string;
+    characterName: string;
+    race: string;
+    class: string;
+    level: number;
+  }) => {
+    const player: Player = {
+      id: Date.now().toString(),
+      ...newPlayer,
+    };
+    setPlayers([...players, player]);
   };
 
   return (
@@ -149,31 +194,76 @@ const CampaignDetails = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Sparkles className="h-6 w-6 text-accent" />
-            <h2 className="text-2xl font-serif font-bold text-foreground">
-              Encuentros Registrados
-            </h2>
-          </div>
-          <CreateEncounterDialog onCreateEncounter={handleCreateEncounter} />
-        </div>
+        <Tabs defaultValue="encounters" className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
+            <TabsTrigger value="encounters" className="gap-2">
+              <Swords className="h-4 w-4" />
+              Encuentros
+            </TabsTrigger>
+            <TabsTrigger value="players" className="gap-2">
+              <Users className="h-4 w-4" />
+              Jugadores
+            </TabsTrigger>
+          </TabsList>
 
-        {encounters.length === 0 ? (
-          <div className="text-center py-16 bg-card rounded-lg border border-border shadow-lg">
-            <Scroll className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <p className="text-xl text-muted-foreground mb-6">
-              No hay encuentros registrados aún
-            </p>
-            <CreateEncounterDialog onCreateEncounter={handleCreateEncounter} />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {encounters.map((encounter) => (
-              <EncounterCard key={encounter.id} encounter={encounter} />
-            ))}
-          </div>
-        )}
+          {/* Encounters Tab */}
+          <TabsContent value="encounters">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-6 w-6 text-accent" />
+                <h2 className="text-2xl font-serif font-bold text-foreground">
+                  Encuentros Registrados
+                </h2>
+              </div>
+              <CreateEncounterDialog onCreateEncounter={handleCreateEncounter} />
+            </div>
+
+            {encounters.length === 0 ? (
+              <div className="text-center py-16 bg-card rounded-lg border border-border shadow-lg">
+                <Scroll className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <p className="text-xl text-muted-foreground mb-6">
+                  No hay encuentros registrados aún
+                </p>
+                <CreateEncounterDialog onCreateEncounter={handleCreateEncounter} />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {encounters.map((encounter) => (
+                  <EncounterCard key={encounter.id} encounter={encounter} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Players Tab */}
+          <TabsContent value="players">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <Users className="h-6 w-6 text-accent" />
+                <h2 className="text-2xl font-serif font-bold text-foreground">
+                  Jugadores de la Campaña
+                </h2>
+              </div>
+              <CreatePlayerDialog onCreatePlayer={handleCreatePlayer} />
+            </div>
+
+            {players.length === 0 ? (
+              <div className="text-center py-16 bg-card rounded-lg border border-border shadow-lg">
+                <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <p className="text-xl text-muted-foreground mb-6">
+                  No hay jugadores registrados aún
+                </p>
+                <CreatePlayerDialog onCreatePlayer={handleCreatePlayer} />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {players.map((player) => (
+                  <PlayerCard key={player.id} player={player} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

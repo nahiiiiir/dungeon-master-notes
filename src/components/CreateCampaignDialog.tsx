@@ -11,7 +11,6 @@ interface CreateCampaignDialogProps {
   onCreateCampaign: (campaign: {
     title: string;
     description: string;
-    players: number;
   }) => void;
 }
 
@@ -19,7 +18,6 @@ export const CreateCampaignDialog = ({ onCreateCampaign }: CreateCampaignDialogP
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [players, setPlayers] = useState(4);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,14 +30,12 @@ export const CreateCampaignDialog = ({ onCreateCampaign }: CreateCampaignDialogP
     onCreateCampaign({
       title: title.trim(),
       description: description.trim(),
-      players,
     });
 
     toast.success("¡Campaña creada exitosamente!");
     
     setTitle("");
     setDescription("");
-    setPlayers(4);
     setOpen(false);
   };
 
@@ -78,18 +74,6 @@ export const CreateCampaignDialog = ({ onCreateCampaign }: CreateCampaignDialogP
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="players">Número de Jugadores</Label>
-            <Input
-              id="players"
-              type="number"
-              min="1"
-              max="10"
-              value={players}
-              onChange={(e) => setPlayers(parseInt(e.target.value) || 1)}
             />
           </div>
 

@@ -1,60 +1,32 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CampaignCard } from "@/components/CampaignCard";
 import { CreateCampaignDialog } from "@/components/CreateCampaignDialog";
 import { Scroll, Sparkles } from "lucide-react";
 import heroImage from "@/assets/hero-dnd.jpg";
-
-interface Campaign {
-  id: string;
-  title: string;
-  description: string;
-  players: number;
-  sessions: number;
-  lastSession: string;
-  status: "active" | "paused" | "completed";
-}
+import { useCampaignContext } from "@/context/CampaignContext";
+import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
-  const [campaigns, setCampaigns] = useState<Campaign[]>([
-    {
-      id: "1",
-      title: "La Maldición del Dragón Carmesí",
-      description: "Los héroes deben detener al antiguo dragón rojo antes de que destruya el reino de Valoria",
-      players: 5,
-      sessions: 12,
-      lastSession: "15 Oct 2025",
-      status: "active",
-    },
-    {
-      id: "2",
-      title: "Las Catacumbas Olvidadas",
-      description: "Una exploración de mazmorras ancestrales llenas de tesoros y peligros mortales",
-      players: 4,
-      sessions: 8,
-      lastSession: "8 Oct 2025",
-      status: "active",
-    },
-  ]);
+  const { campaigns, addCampaign, getPlayersByCampaign, getEncountersByCampaign } = useCampaignContext();
 
   const handleCreateCampaign = (newCampaign: {
     title: string;
     description: string;
-    players: number;
   }) => {
-    const campaign: Campaign = {
+    const campaign = {
       id: Date.now().toString(),
-      ...newCampaign,
-      sessions: 0,
+      title: newCampaign.title,
+      description: newCampaign.description,
       lastSession: new Date().toLocaleDateString("es-ES", {
         day: "numeric",
         month: "short",
         year: "numeric",
       }),
-      status: "active",
+      status: "active" as const,
     };
-    setCampaigns([campaign, ...campaigns]);
+    addCampaign(campaign);
+    toast.success("¡Campaña creada exitosamente!");
   };
 
   return (
@@ -105,6 +77,8 @@ const Index = () => {
               <CampaignCard
                 key={campaign.id}
                 campaign={campaign}
+                playersCount={getPlayersByCampaign(campaign.id).length}
+                encountersCount={getEncountersByCampaign(campaign.id).length}
                 onClick={() => navigate(`/campaign/${campaign.id}`)}
               />
             ))}

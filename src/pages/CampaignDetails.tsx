@@ -8,24 +8,8 @@ import { PlayerCard } from "@/components/PlayerCard";
 import { ArrowLeft, Users, Calendar, Scroll, Sparkles, Swords } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface Player {
-  id: string;
-  playerName: string;
-  characterName: string;
-  race: string;
-  class: string;
-  level: number;
-}
-
-interface Encounter {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: string;
-  enemies: string;
-  date: string;
-}
+import { useCampaignContext } from "@/context/CampaignContext";
+import { toast } from "sonner";
 
 const statusColors = {
   active: "bg-primary text-primary-foreground",
@@ -39,72 +23,89 @@ const statusLabels = {
   completed: "Completada",
 };
 
-// Datos de ejemplo - en producción vendrían de un estado global o base de datos
-const campaignsData = {
-  "1": {
-    title: "La Maldición del Dragón Carmesí",
-    description: "Los héroes deben detener al antiguo dragón rojo antes de que destruya el reino de Valoria",
-    players: 5,
-    sessions: 12,
-    lastSession: "15 Oct 2025",
-    status: "active" as const,
-  },
-  "2": {
-    title: "Las Catacumbas Olvidadas",
-    description: "Una exploración de mazmorras ancestrales llenas de tesoros y peligros mortales",
-    players: 4,
-    sessions: 8,
-    lastSession: "8 Oct 2025",
-    status: "active" as const,
-  },
-};
 
 const CampaignDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { 
+    campaigns, 
+    getPlayersByCampaign, 
+    getEncountersByCampaign,
+    addPlayer,
+    addEncounter,
+    updatePlayer,
+    updateEncounter
+  } = useCampaignContext();
   
-  const campaign = id ? campaignsData[id as keyof typeof campaignsData] : null;
+  const campaign = campaigns.find(c => c.id === id);
+  const players = id ? getPlayersByCampaign(id) : [];
+  const encounters = id ? getEncountersByCampaign(id) : [];
 
-  const [editingEncounter, setEditingEncounter] = useState<Encounter | null>(null);
-  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+  const [editingEncounter, setEditingEncounter] = useState<any>(null);
+  const [editingPlayer, setEditingPlayer] = useState<any>(null);
 
-  const [encounters, setEncounters] = useState<Encounter[]>([
-    {
-      id: "1",
-      title: "Emboscada de Goblins",
-      description: "Los héroes fueron emboscados por un grupo de goblins mientras viajaban por el bosque oscuro",
-      difficulty: "easy",
-      enemies: "6 Goblins, 1 Hobgoblin",
-      date: "12 Oct 2025",
-    },
-    {
-      id: "2",
-      title: "El Guardian del Templo",
-      description: "Un golem de piedra ancestral protege la entrada del templo perdido",
-      difficulty: "hard",
-      enemies: "1 Golem de Piedra",
-      date: "14 Oct 2025",
-    },
-  ]);
+  const handleCreateEncounter = (newEncounter: {
+    title: string;
+    description: string;
+    difficulty: string;
+    enemies: string;
+  }) => {
+    if (!id) return;
+    
+    const encounter = {
+      id: Date.now().toString(),
+      campaignId: id,
+      ...newEncounter,
+      date: new Date().toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+    };
+    addEncounter(encounter);
+    toast.success("¡Encuentro registrado exitosamente!");
+  };
 
-  const [players, setPlayers] = useState<Player[]>([
-    {
-      id: "1",
-      playerName: "María García",
-      characterName: "Elara Luzdestrella",
-      race: "Elfa",
-      class: "Maga",
-      level: 5,
-    },
-    {
-      id: "2",
-      playerName: "Carlos Ruiz",
-      characterName: "Thorin Martillo de Guerra",
-      race: "Enano",
-      class: "Guerrero",
-      level: 5,
-    },
-  ]);
+  const handleCreatePlayer = (newPlayer: {
+    playerName: string;
+    characterName: string;
+    race: string;
+    class: string;
+    level: number;
+  }) => {
+    if (!id) return;
+    
+    const player = {
+      id: Date.now().toString(),
+      campaignId: id,
+      ...newPlayer,
+    };
+    addPlayer(player);
+    toast.success("¡Jugador registrado exitosamente!");
+  };
+
+  const handleUpdateEncounter = (encounterId: string, updatedData: {
+    title: string;
+    description: string;
+    difficulty: string;
+    enemies: string;
+  }) => {
+    updateEncounter(encounterId, updatedData);
+    setEditingEncounter(null);
+    toast.success("¡Encuentro actualizado exitosamente!");
+  };
+
+  const handleUpdatePlayer = (playerId: string, updatedData: {
+    playerName: string;
+    characterName: string;
+    race: string;
+    class: string;
+    level: number;
+  }) => {
+    updatePlayer(playerId, updatedData);
+    setEditingPlayer(null);
+    toast.success("¡Jugador actualizado exitosamente!");
+  };
 
   if (!campaign) {
     return (
@@ -118,67 +119,6 @@ const CampaignDetails = () => {
       </div>
     );
   }
-
-  const handleCreateEncounter = (newEncounter: {
-    title: string;
-    description: string;
-    difficulty: string;
-    enemies: string;
-  }) => {
-    const encounter: Encounter = {
-      id: Date.now().toString(),
-      ...newEncounter,
-      date: new Date().toLocaleDateString("es-ES", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }),
-    };
-    setEncounters([encounter, ...encounters]);
-  };
-
-  const handleCreatePlayer = (newPlayer: {
-    playerName: string;
-    characterName: string;
-    race: string;
-    class: string;
-    level: number;
-  }) => {
-    const player: Player = {
-      id: Date.now().toString(),
-      ...newPlayer,
-    };
-    setPlayers([...players, player]);
-  };
-
-  const handleUpdateEncounter = (encounterId: string, updatedData: {
-    title: string;
-    description: string;
-    difficulty: string;
-    enemies: string;
-  }) => {
-    setEncounters(encounters.map(enc => 
-      enc.id === encounterId 
-        ? { ...enc, ...updatedData }
-        : enc
-    ));
-    setEditingEncounter(null);
-  };
-
-  const handleUpdatePlayer = (playerId: string, updatedData: {
-    playerName: string;
-    characterName: string;
-    race: string;
-    class: string;
-    level: number;
-  }) => {
-    setPlayers(players.map(p => 
-      p.id === playerId 
-        ? { ...p, ...updatedData }
-        : p
-    ));
-    setEditingPlayer(null);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -210,11 +150,11 @@ const CampaignDetails = () => {
           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4" />
-              <span>{campaign.players} jugadores</span>
+              <span>{players.length} {players.length === 1 ? 'jugador' : 'jugadores'}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Scroll className="h-4 w-4" />
-              <span>{campaign.sessions} sesiones</span>
+              <Swords className="h-4 w-4" />
+              <span>{encounters.length} {encounters.length === 1 ? 'encuentro' : 'encuentros'}</span>
             </div>
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />

@@ -1,20 +1,20 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, Scroll } from "lucide-react";
+import { Calendar, Users, Swords } from "lucide-react";
 
 interface Campaign {
   id: string;
   title: string;
   description: string;
-  players: number;
-  sessions: number;
-  lastSession: string;
   status: "active" | "paused" | "completed";
+  lastSession: string;
 }
 
 interface CampaignCardProps {
   campaign: Campaign;
   onClick: () => void;
+  playersCount: number;
+  encountersCount: number;
 }
 
 const statusColors = {
@@ -29,7 +29,7 @@ const statusLabels = {
   completed: "Completada",
 };
 
-export const CampaignCard = ({ campaign, onClick }: CampaignCardProps) => {
+export const CampaignCard = ({ campaign, onClick, playersCount, encountersCount }: CampaignCardProps) => {
   return (
     <Card 
       className="cursor-pointer transition-all hover:shadow-[var(--shadow-mystical)] hover:-translate-y-1 bg-gradient-to-b from-card to-card/95 border-border/50"
@@ -48,11 +48,11 @@ export const CampaignCard = ({ campaign, onClick }: CampaignCardProps) => {
         <div className="flex gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <Users className="h-4 w-4" />
-            <span>{campaign.players} jugadores</span>
+            <span>{playersCount} {playersCount === 1 ? 'jugador' : 'jugadores'}</span>
           </div>
           <div className="flex items-center gap-1">
-            <Scroll className="h-4 w-4" />
-            <span>{campaign.sessions} sesiones</span>
+            <Swords className="h-4 w-4" />
+            <span>{encountersCount} {encountersCount === 1 ? 'encuentro' : 'encuentros'}</span>
           </div>
           <div className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />

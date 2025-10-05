@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Shield, Wand2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { User, Shield, Wand2, Pencil } from "lucide-react";
 
 interface Player {
   id: string;
@@ -13,14 +14,15 @@ interface Player {
 
 interface PlayerCardProps {
   player: Player;
+  onEdit: (player: Player) => void;
 }
 
-export const PlayerCard = ({ player }: PlayerCardProps) => {
+export const PlayerCard = ({ player, onEdit }: PlayerCardProps) => {
   return (
     <Card className="transition-all hover:shadow-lg bg-gradient-to-b from-card to-card/95 border-border/50">
       <CardHeader>
         <div className="flex items-start justify-between mb-2">
-          <div>
+          <div className="flex-1">
             <CardTitle className="text-lg font-serif text-foreground mb-1">
               {player.characterName}
             </CardTitle>
@@ -29,9 +31,19 @@ export const PlayerCard = ({ player }: PlayerCardProps) => {
               <span>{player.playerName}</span>
             </div>
           </div>
-          <Badge variant="secondary" className="text-lg font-bold">
-            Nv. {player.level}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-lg font-bold">
+              Nv. {player.level}
+            </Badge>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => onEdit(player)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>

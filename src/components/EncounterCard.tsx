@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skull, Swords } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skull, Swords, Pencil } from "lucide-react";
 
 interface Encounter {
   id: string;
@@ -13,6 +14,7 @@ interface Encounter {
 
 interface EncounterCardProps {
   encounter: Encounter;
+  onEdit: (encounter: Encounter) => void;
 }
 
 const difficultyColors = {
@@ -29,7 +31,7 @@ const difficultyLabels = {
   deadly: "Mortal",
 };
 
-export const EncounterCard = ({ encounter }: EncounterCardProps) => {
+export const EncounterCard = ({ encounter, onEdit }: EncounterCardProps) => {
   return (
     <Card className="transition-all hover:shadow-lg bg-gradient-to-b from-card to-card/95 border-border/50">
       <CardHeader>
@@ -38,9 +40,19 @@ export const EncounterCard = ({ encounter }: EncounterCardProps) => {
             <Swords className="h-5 w-5 text-primary" />
             <CardTitle className="text-lg font-serif">{encounter.title}</CardTitle>
           </div>
-          <Badge className={difficultyColors[encounter.difficulty as keyof typeof difficultyColors]}>
-            {difficultyLabels[encounter.difficulty as keyof typeof difficultyLabels]}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className={difficultyColors[encounter.difficulty as keyof typeof difficultyColors]}>
+              {difficultyLabels[encounter.difficulty as keyof typeof difficultyLabels]}
+            </Badge>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => onEdit(encounter)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         <CardDescription>{encounter.description}</CardDescription>
       </CardHeader>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,14 +15,31 @@ interface CreateEncounterDialogProps {
     difficulty: string;
     enemies: string;
   }) => void;
+  editingEncounter?: {
+    id: string;
+    title: string;
+    description: string;
+    difficulty: string;
+    enemies: string;
+  } | null;
+  onUpdateEncounter?: (id: string, encounter: {
+    title: string;
+    description: string;
+    difficulty: string;
+    enemies: string;
+  }) => void;
 }
 
-export const CreateEncounterDialog = ({ onCreateEncounter }: CreateEncounterDialogProps) => {
+export const CreateEncounterDialog = ({ 
+  onCreateEncounter, 
+  editingEncounter, 
+  onUpdateEncounter 
+}: CreateEncounterDialogProps) => {
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [difficulty, setDifficulty] = useState("medium");
-  const [enemies, setEnemies] = useState("");
+  const [title, setTitle] = useState(editingEncounter?.title || "");
+  const [description, setDescription] = useState(editingEncounter?.description || "");
+  const [difficulty, setDifficulty] = useState(editingEncounter?.difficulty || "medium");
+  const [enemies, setEnemies] = useState(editingEncounter?.enemies || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,14 +49,23 @@ export const CreateEncounterDialog = ({ onCreateEncounter }: CreateEncounterDial
       return;
     }
 
-    onCreateEncounter({
-      title: title.trim(),
-      description: description.trim(),
-      difficulty,
-      enemies: enemies.trim(),
-    });
-
-    toast.success("¡Encuentro registrado exitosamente!");
+    if (editingEncounter && onUpdateEncounter) {
+      onUpdateEncounter(editingEncounter.id, {
+        title: title.trim(),
+        description: description.trim(),
+        difficulty,
+        enemies: enemies.trim(),
+      });
+      toast.success("¡Encuentro actualizado exitosamente!");
+    } else {
+      onCreateEncounter({
+        title: title.trim(),
+        description: description.trim(),
+        difficulty,
+        enemies: enemies.trim(),
+      });
+      toast.success("¡Encuentro registrado exitosamente!");
+    }
     
     setTitle("");
     setDescription("");
@@ -48,19 +74,36 @@ export const CreateEncounterDialog = ({ onCreateEncounter }: CreateEncounterDial
     setOpen(false);
   };
 
+  // Update form when editingEncounter changes
+  useEffect(() => {
+    if (editingEncounter) {
+      setTitle(editingEncounter.title);
+      setDescription(editingEncounter.description);
+      setDifficulty(editingEncounter.difficulty);
+      setEnemies(editingEncounter.enemies);
+      setOpen(true);
+    }
+  }, [editingEncounter]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="default" size="lg" className="gap-2">
-          <Swords className="h-5 w-5" />
-          Registrar Encuentro
-        </Button>
-      </DialogTrigger>
+      {!editingEncounter && (
+        <DialogTrigger asChild>
+          <Button variant="secondary" size="lg" className="gap-2">
+            <Swords className="h-5 w-5" />
+            Registrar Encuentro
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-serif">Nuevo Encuentro</DialogTitle>
+          <DialogTitle className="text-2xl font-serif">
+            {editingEncounter ? "Editar Encuentro" : "Nuevo Encuentro"}
+          </DialogTitle>
           <DialogDescription>
-            Registra un nuevo encuentro de combate o desafío para esta sesión.
+            {editingEncounter 
+              ? "Actualiza la información de este encuentro."
+              : "Registra un nuevo encuentro de combate o desafío para esta sesión."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
@@ -116,7 +159,7 @@ export const CreateEncounterDialog = ({ onCreateEncounter }: CreateEncounterDial
               Cancelar
             </Button>
             <Button type="submit" variant="default">
-              Registrar Encuentro
+              {editingEncounter ? "Actualizar Encuentro" : "Registrar Encuentro"}
             </Button>
           </div>
         </form>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,15 +14,34 @@ interface CreatePlayerDialogProps {
     class: string;
     level: number;
   }) => void;
+  editingPlayer?: {
+    id: string;
+    playerName: string;
+    characterName: string;
+    race: string;
+    class: string;
+    level: number;
+  } | null;
+  onUpdatePlayer?: (id: string, player: {
+    playerName: string;
+    characterName: string;
+    race: string;
+    class: string;
+    level: number;
+  }) => void;
 }
 
-export const CreatePlayerDialog = ({ onCreatePlayer }: CreatePlayerDialogProps) => {
+export const CreatePlayerDialog = ({ 
+  onCreatePlayer,
+  editingPlayer,
+  onUpdatePlayer
+}: CreatePlayerDialogProps) => {
   const [open, setOpen] = useState(false);
-  const [playerName, setPlayerName] = useState("");
-  const [characterName, setCharacterName] = useState("");
-  const [race, setRace] = useState("");
-  const [characterClass, setCharacterClass] = useState("");
-  const [level, setLevel] = useState(1);
+  const [playerName, setPlayerName] = useState(editingPlayer?.playerName || "");
+  const [characterName, setCharacterName] = useState(editingPlayer?.characterName || "");
+  const [race, setRace] = useState(editingPlayer?.race || "");
+  const [characterClass, setCharacterClass] = useState(editingPlayer?.class || "");
+  const [level, setLevel] = useState(editingPlayer?.level || 1);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,15 +51,25 @@ export const CreatePlayerDialog = ({ onCreatePlayer }: CreatePlayerDialogProps) 
       return;
     }
 
-    onCreatePlayer({
-      playerName: playerName.trim(),
-      characterName: characterName.trim(),
-      race: race.trim(),
-      class: characterClass.trim(),
-      level,
-    });
-
-    toast.success("¡Jugador registrado exitosamente!");
+    if (editingPlayer && onUpdatePlayer) {
+      onUpdatePlayer(editingPlayer.id, {
+        playerName: playerName.trim(),
+        characterName: characterName.trim(),
+        race: race.trim(),
+        class: characterClass.trim(),
+        level,
+      });
+      toast.success("¡Jugador actualizado exitosamente!");
+    } else {
+      onCreatePlayer({
+        playerName: playerName.trim(),
+        characterName: characterName.trim(),
+        race: race.trim(),
+        class: characterClass.trim(),
+        level,
+      });
+      toast.success("¡Jugador registrado exitosamente!");
+    }
     
     setPlayerName("");
     setCharacterName("");
@@ -50,19 +79,37 @@ export const CreatePlayerDialog = ({ onCreatePlayer }: CreatePlayerDialogProps) 
     setOpen(false);
   };
 
+  // Update form when editingPlayer changes
+  useEffect(() => {
+    if (editingPlayer) {
+      setPlayerName(editingPlayer.playerName);
+      setCharacterName(editingPlayer.characterName);
+      setRace(editingPlayer.race);
+      setCharacterClass(editingPlayer.class);
+      setLevel(editingPlayer.level);
+      setOpen(true);
+    }
+  }, [editingPlayer]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="secondary" size="lg" className="gap-2">
-          <UserPlus className="h-5 w-5" />
-          Registrar Jugador
-        </Button>
-      </DialogTrigger>
+      {!editingPlayer && (
+        <DialogTrigger asChild>
+          <Button variant="secondary" size="lg" className="gap-2">
+            <UserPlus className="h-5 w-5" />
+            Registrar Jugador
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-serif">Nuevo Jugador</DialogTitle>
+          <DialogTitle className="text-2xl font-serif">
+            {editingPlayer ? "Editar Jugador" : "Nuevo Jugador"}
+          </DialogTitle>
           <DialogDescription>
-            Registra un nuevo jugador y su personaje en esta campaña.
+            {editingPlayer
+              ? "Actualiza la información de este jugador."
+              : "Registra un nuevo jugador y su personaje en esta campaña."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
@@ -126,7 +173,7 @@ export const CreatePlayerDialog = ({ onCreatePlayer }: CreatePlayerDialogProps) 
               Cancelar
             </Button>
             <Button type="submit" variant="default">
-              Registrar Jugador
+              {editingPlayer ? "Actualizar Jugador" : "Registrar Jugador"}
             </Button>
           </div>
         </form>

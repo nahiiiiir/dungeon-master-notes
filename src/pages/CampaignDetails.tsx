@@ -65,6 +65,9 @@ const CampaignDetails = () => {
   
   const campaign = id ? campaignsData[id as keyof typeof campaignsData] : null;
 
+  const [editingEncounter, setEditingEncounter] = useState<Encounter | null>(null);
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+
   const [encounters, setEncounters] = useState<Encounter[]>([
     {
       id: "1",
@@ -148,6 +151,35 @@ const CampaignDetails = () => {
     setPlayers([...players, player]);
   };
 
+  const handleUpdateEncounter = (encounterId: string, updatedData: {
+    title: string;
+    description: string;
+    difficulty: string;
+    enemies: string;
+  }) => {
+    setEncounters(encounters.map(enc => 
+      enc.id === encounterId 
+        ? { ...enc, ...updatedData }
+        : enc
+    ));
+    setEditingEncounter(null);
+  };
+
+  const handleUpdatePlayer = (playerId: string, updatedData: {
+    playerName: string;
+    characterName: string;
+    race: string;
+    class: string;
+    level: number;
+  }) => {
+    setPlayers(players.map(p => 
+      p.id === playerId 
+        ? { ...p, ...updatedData }
+        : p
+    ));
+    setEditingPlayer(null);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -215,7 +247,11 @@ const CampaignDetails = () => {
                   Encuentros Registrados
                 </h2>
               </div>
-              <CreateEncounterDialog onCreateEncounter={handleCreateEncounter} />
+              <CreateEncounterDialog 
+                onCreateEncounter={handleCreateEncounter}
+                editingEncounter={editingEncounter}
+                onUpdateEncounter={handleUpdateEncounter}
+              />
             </div>
 
             {encounters.length === 0 ? (
@@ -224,12 +260,20 @@ const CampaignDetails = () => {
                 <p className="text-xl text-muted-foreground mb-6">
                   No hay encuentros registrados aún
                 </p>
-                <CreateEncounterDialog onCreateEncounter={handleCreateEncounter} />
+                <CreateEncounterDialog 
+                  onCreateEncounter={handleCreateEncounter}
+                  editingEncounter={editingEncounter}
+                  onUpdateEncounter={handleUpdateEncounter}
+                />
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {encounters.map((encounter) => (
-                  <EncounterCard key={encounter.id} encounter={encounter} />
+                  <EncounterCard 
+                    key={encounter.id} 
+                    encounter={encounter} 
+                    onEdit={setEditingEncounter}
+                  />
                 ))}
               </div>
             )}
@@ -244,7 +288,11 @@ const CampaignDetails = () => {
                   Jugadores de la Campaña
                 </h2>
               </div>
-              <CreatePlayerDialog onCreatePlayer={handleCreatePlayer} />
+              <CreatePlayerDialog 
+                onCreatePlayer={handleCreatePlayer}
+                editingPlayer={editingPlayer}
+                onUpdatePlayer={handleUpdatePlayer}
+              />
             </div>
 
             {players.length === 0 ? (
@@ -253,12 +301,20 @@ const CampaignDetails = () => {
                 <p className="text-xl text-muted-foreground mb-6">
                   No hay jugadores registrados aún
                 </p>
-                <CreatePlayerDialog onCreatePlayer={handleCreatePlayer} />
+                <CreatePlayerDialog 
+                  onCreatePlayer={handleCreatePlayer}
+                  editingPlayer={editingPlayer}
+                  onUpdatePlayer={handleUpdatePlayer}
+                />
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {players.map((player) => (
-                  <PlayerCard key={player.id} player={player} />
+                  <PlayerCard 
+                    key={player.id} 
+                    player={player} 
+                    onEdit={setEditingPlayer}
+                  />
                 ))}
               </div>
             )}

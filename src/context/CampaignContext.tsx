@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export interface Player {
   id: string;
@@ -32,95 +34,241 @@ interface CampaignContextType {
   campaigns: Campaign[];
   players: Player[];
   encounters: Encounter[];
-  addCampaign: (campaign: Campaign) => void;
-  addPlayer: (player: Player) => void;
-  addEncounter: (encounter: Encounter) => void;
-  updatePlayer: (playerId: string, updatedPlayer: Partial<Player>) => void;
-  updateEncounter: (encounterId: string, updatedEncounter: Partial<Encounter>) => void;
+  addCampaign: (campaign: Campaign) => Promise<void>;
+  addPlayer: (player: Player) => Promise<void>;
+  addEncounter: (encounter: Encounter) => Promise<void>;
+  updatePlayer: (playerId: string, updatedPlayer: Partial<Player>) => Promise<void>;
+  updateEncounter: (encounterId: string, updatedEncounter: Partial<Encounter>) => Promise<void>;
   getPlayersByCampaign: (campaignId: string) => Player[];
   getEncountersByCampaign: (campaignId: string) => Encounter[];
+  loading: boolean;
 }
 
 const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
 
 export const CampaignProvider = ({ children }: { children: ReactNode }) => {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([
-    {
-      id: "1",
-      title: "La Maldición del Dragón Carmesí",
-      description: "Los héroes deben detener al antiguo dragón rojo antes de que destruya el reino de Valoria",
-      lastSession: "15 Oct 2025",
-      status: "active",
-    },
-    {
-      id: "2",
-      title: "Las Catacumbas Olvidadas",
-      description: "Una exploración de mazmorras ancestrales llenas de tesoros y peligros mortales",
-      lastSession: "8 Oct 2025",
-      status: "active",
-    },
-  ]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [encounters, setEncounters] = useState<Encounter[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const [players, setPlayers] = useState<Player[]>([
-    {
-      id: "1",
-      campaignId: "1",
-      playerName: "María García",
-      characterName: "Elara Luzdestrella",
-      race: "Elfa",
-      class: "Maga",
-      level: 5,
-    },
-    {
-      id: "2",
-      campaignId: "1",
-      playerName: "Carlos Ruiz",
-      characterName: "Thorin Martillo de Guerra",
-      race: "Enano",
-      class: "Guerrero",
-      level: 5,
-    },
-  ]);
+  // Fetch campaigns
+  const fetchCampaigns = async () => {
+    const { data, error } = await supabase
+      .from("campaigns")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  const [encounters, setEncounters] = useState<Encounter[]>([
-    {
-      id: "1",
-      campaignId: "1",
-      title: "Emboscada de Goblins",
-      description: "Los héroes fueron emboscados por un grupo de goblins mientras viajaban por el bosque oscuro",
-      difficulty: "easy",
-      enemies: "6 Goblins, 1 Hobgoblin",
-      date: "12 Oct 2025",
-    },
-    {
-      id: "2",
-      campaignId: "1",
-      title: "El Guardian del Templo",
-      description: "Un golem de piedra ancestral protege la entrada del templo perdido",
-      difficulty: "hard",
-      enemies: "1 Golem de Piedra",
-      date: "14 Oct 2025",
-    },
-  ]);
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al cargar campañas",
+        description: error.message,
+      });
+      return;
+    }
 
-  const addCampaign = (campaign: Campaign) => {
-    setCampaigns([campaign, ...campaigns]);
+    if (data) {
+      setCampaigns(
+        data.map((c) => ({
+          id: c.id,
+          title: c.title,
+          description: c.description || "",
+          lastSession: c.last_session || "",
+          status: c.status as "active" | "paused" | "completed",
+        }))
+      );
+    }
   };
 
-  const addPlayer = (player: Player) => {
-    setPlayers([...players, player]);
+  // Fetch players
+  const fetchPlayers = async () => {
+    const { data, error } = await supabase
+      .from("players")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al cargar jugadores",
+        description: error.message,
+      });
+      return;
+    }
+
+    if (data) {
+      setPlayers(
+        data.map((p) => ({
+          id: p.id,
+          campaignId: p.campaign_id,
+          playerName: p.player_name,
+          characterName: p.character_name,
+          race: p.race,
+          class: p.class,
+          level: p.level,
+        }))
+      );
+    }
   };
 
-  const addEncounter = (encounter: Encounter) => {
-    setEncounters([encounter, ...encounters]);
+  // Fetch encounters
+  const fetchEncounters = async () => {
+    const { data, error } = await supabase
+      .from("encounters")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al cargar encuentros",
+        description: error.message,
+      });
+      return;
+    }
+
+    if (data) {
+      setEncounters(
+        data.map((e) => ({
+          id: e.id,
+          campaignId: e.campaign_id,
+          title: e.title,
+          description: e.description || "",
+          difficulty: e.difficulty,
+          enemies: e.enemies,
+          date: e.date || "",
+        }))
+      );
+    }
   };
 
-  const updatePlayer = (playerId: string, updatedPlayer: Partial<Player>) => {
-    setPlayers(players.map(p => p.id === playerId ? { ...p, ...updatedPlayer } : p));
+  // Initial load
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchCampaigns(), fetchPlayers(), fetchEncounters()]);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  const addCampaign = async (campaign: Campaign) => {
+    const { error } = await supabase.from("campaigns").insert({
+      id: campaign.id,
+      title: campaign.title,
+      description: campaign.description,
+      last_session: campaign.lastSession,
+      status: campaign.status,
+    });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al crear campaña",
+        description: error.message,
+      });
+      return;
+    }
+
+    await fetchCampaigns();
   };
 
-  const updateEncounter = (encounterId: string, updatedEncounter: Partial<Encounter>) => {
-    setEncounters(encounters.map(e => e.id === encounterId ? { ...e, ...updatedEncounter } : e));
+  const addPlayer = async (player: Player) => {
+    const { error } = await supabase.from("players").insert({
+      id: player.id,
+      campaign_id: player.campaignId,
+      player_name: player.playerName,
+      character_name: player.characterName,
+      race: player.race,
+      class: player.class,
+      level: player.level,
+    });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al crear jugador",
+        description: error.message,
+      });
+      return;
+    }
+
+    await fetchPlayers();
+  };
+
+  const addEncounter = async (encounter: Encounter) => {
+    const { error } = await supabase.from("encounters").insert({
+      id: encounter.id,
+      campaign_id: encounter.campaignId,
+      title: encounter.title,
+      description: encounter.description,
+      difficulty: encounter.difficulty,
+      enemies: encounter.enemies,
+      date: encounter.date,
+    });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al crear encuentro",
+        description: error.message,
+      });
+      return;
+    }
+
+    await fetchEncounters();
+  };
+
+  const updatePlayer = async (playerId: string, updatedPlayer: Partial<Player>) => {
+    const updateData: any = {};
+    if (updatedPlayer.playerName) updateData.player_name = updatedPlayer.playerName;
+    if (updatedPlayer.characterName) updateData.character_name = updatedPlayer.characterName;
+    if (updatedPlayer.race) updateData.race = updatedPlayer.race;
+    if (updatedPlayer.class) updateData.class = updatedPlayer.class;
+    if (updatedPlayer.level !== undefined) updateData.level = updatedPlayer.level;
+
+    const { error } = await supabase
+      .from("players")
+      .update(updateData)
+      .eq("id", playerId);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al actualizar jugador",
+        description: error.message,
+      });
+      return;
+    }
+
+    await fetchPlayers();
+  };
+
+  const updateEncounter = async (encounterId: string, updatedEncounter: Partial<Encounter>) => {
+    const updateData: any = {};
+    if (updatedEncounter.title) updateData.title = updatedEncounter.title;
+    if (updatedEncounter.description) updateData.description = updatedEncounter.description;
+    if (updatedEncounter.difficulty) updateData.difficulty = updatedEncounter.difficulty;
+    if (updatedEncounter.enemies) updateData.enemies = updatedEncounter.enemies;
+    if (updatedEncounter.date) updateData.date = updatedEncounter.date;
+
+    const { error } = await supabase
+      .from("encounters")
+      .update(updateData)
+      .eq("id", encounterId);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al actualizar encuentro",
+        description: error.message,
+      });
+      return;
+    }
+
+    await fetchEncounters();
   };
 
   const getPlayersByCampaign = (campaignId: string) => {
@@ -144,6 +292,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         updateEncounter,
         getPlayersByCampaign,
         getEncountersByCampaign,
+        loading,
       }}
     >
       {children}

@@ -14,7 +14,124 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      campaigns: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          last_session: string | null
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          last_session?: string | null
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          last_session?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      encounters: {
+        Row: {
+          campaign_id: string
+          created_at: string | null
+          date: string | null
+          description: string | null
+          difficulty: string
+          enemies: string
+          id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string | null
+          date?: string | null
+          description?: string | null
+          difficulty: string
+          enemies: string
+          id?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string | null
+          date?: string | null
+          description?: string | null
+          difficulty?: string
+          enemies?: string
+          id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "encounters_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      players: {
+        Row: {
+          campaign_id: string
+          character_name: string
+          class: string
+          created_at: string | null
+          id: string
+          level: number
+          player_name: string
+          race: string
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          character_name: string
+          class: string
+          created_at?: string | null
+          id?: string
+          level?: number
+          player_name: string
+          race: string
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          character_name?: string
+          class?: string
+          created_at?: string | null
+          id?: string
+          level?: number
+          player_name?: string
+          race?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -34,191 +34,190 @@ interface CampaignContextType {
   campaigns: Campaign[];
   players: Player[];
   encounters: Encounter[];
-  addCampaign: (campaign: Campaign) => Promise<void>;
-  addPlayer: (player: Player) => Promise<void>;
-  addEncounter: (encounter: Encounter) => Promise<void>;
-  updatePlayer: (playerId: string, updatedPlayer: Partial<Player>) => Promise<void>;
-  updateEncounter: (encounterId: string, updatedEncounter: Partial<Encounter>) => Promise<void>;
+  addCampaign: (campaign: Campaign) => void;
+  addPlayer: (player: Player) => void;
+  addEncounter: (encounter: Encounter) => void;
+  updatePlayer: (playerId: string, updatedPlayer: Partial<Player>) => void;
+  updateEncounter: (encounterId: string, updatedEncounter: Partial<Encounter>) => void;
   getPlayersByCampaign: (campaignId: string) => Player[];
   getEncountersByCampaign: (campaignId: string) => Encounter[];
-  loading: boolean;
 }
 
 const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
 
 export const CampaignProvider = ({ children }: { children: ReactNode }) => {
+  const { toast } = useToast();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [encounters, setEncounters] = useState<Encounter[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
-  // Fetch campaigns
-  const fetchCampaigns = async () => {
-    const { data, error } = await supabase
-      .from("campaigns")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error al cargar campañas",
-        description: error.message,
-      });
-      return;
-    }
-
-    if (data) {
-      setCampaigns(
-        data.map((c) => ({
-          id: c.id,
-          title: c.title,
-          description: c.description || "",
-          lastSession: c.last_session || "",
-          status: c.status as "active" | "paused" | "completed",
-        }))
-      );
-    }
-  };
-
-  // Fetch players
-  const fetchPlayers = async () => {
-    const { data, error } = await supabase
-      .from("players")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error al cargar jugadores",
-        description: error.message,
-      });
-      return;
-    }
-
-    if (data) {
-      setPlayers(
-        data.map((p) => ({
-          id: p.id,
-          campaignId: p.campaign_id,
-          playerName: p.player_name,
-          characterName: p.character_name,
-          race: p.race,
-          class: p.class,
-          level: p.level,
-        }))
-      );
-    }
-  };
-
-  // Fetch encounters
-  const fetchEncounters = async () => {
-    const { data, error } = await supabase
-      .from("encounters")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error al cargar encuentros",
-        description: error.message,
-      });
-      return;
-    }
-
-    if (data) {
-      setEncounters(
-        data.map((e) => ({
-          id: e.id,
-          campaignId: e.campaign_id,
-          title: e.title,
-          description: e.description || "",
-          difficulty: e.difficulty,
-          enemies: e.enemies,
-          date: e.date || "",
-        }))
-      );
-    }
-  };
-
-  // Initial load
+  // Load campaigns from Supabase
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await Promise.all([fetchCampaigns(), fetchPlayers(), fetchEncounters()]);
-      setLoading(false);
+    const fetchCampaigns = async () => {
+      const { data, error } = await supabase
+        .from("campaigns")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar las campañas",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setCampaigns(data.map(c => ({
+        id: c.id,
+        title: c.title,
+        description: c.description || "",
+        lastSession: c.last_session || "",
+        status: c.status as "active" | "paused" | "completed",
+      })));
     };
-    loadData();
-  }, []);
+
+    fetchCampaigns();
+  }, [toast]);
+
+  // Load players from Supabase
+  useEffect(() => {
+    const fetchPlayers = async () => {
+      const { data, error } = await supabase
+        .from("players")
+        .select("*");
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los jugadores",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setPlayers(data.map(p => ({
+        id: p.id,
+        campaignId: p.campaign_id,
+        playerName: p.player_name,
+        characterName: p.character_name,
+        race: p.race,
+        class: p.class,
+        level: p.level,
+      })));
+    };
+
+    fetchPlayers();
+  }, [toast]);
+
+  // Load encounters from Supabase
+  useEffect(() => {
+    const fetchEncounters = async () => {
+      const { data, error } = await supabase
+        .from("encounters")
+        .select("*")
+        .order("date", { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los encuentros",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setEncounters(data.map(e => ({
+        id: e.id,
+        campaignId: e.campaign_id,
+        title: e.title,
+        description: e.description || "",
+        difficulty: e.difficulty,
+        enemies: e.enemies,
+        date: e.date || "",
+      })));
+    };
+
+    fetchEncounters();
+  }, [toast]);
 
   const addCampaign = async (campaign: Campaign) => {
-    const { error } = await supabase.from("campaigns").insert({
-      id: campaign.id,
-      title: campaign.title,
-      description: campaign.description,
-      last_session: campaign.lastSession,
-      status: campaign.status,
-    });
+    const { data, error } = await supabase
+      .from("campaigns")
+      .insert({
+        id: campaign.id,
+        title: campaign.title,
+        description: campaign.description,
+        last_session: campaign.lastSession,
+        status: campaign.status,
+      })
+      .select()
+      .single();
 
     if (error) {
       toast({
+        title: "Error",
+        description: "No se pudo crear la campaña",
         variant: "destructive",
-        title: "Error al crear campaña",
-        description: error.message,
       });
       return;
     }
 
-    await fetchCampaigns();
+    setCampaigns([campaign, ...campaigns]);
   };
 
   const addPlayer = async (player: Player) => {
-    const { error } = await supabase.from("players").insert({
-      id: player.id,
-      campaign_id: player.campaignId,
-      player_name: player.playerName,
-      character_name: player.characterName,
-      race: player.race,
-      class: player.class,
-      level: player.level,
-    });
+    const { data, error } = await supabase
+      .from("players")
+      .insert({
+        id: player.id,
+        campaign_id: player.campaignId,
+        player_name: player.playerName,
+        character_name: player.characterName,
+        race: player.race,
+        class: player.class,
+        level: player.level,
+      })
+      .select()
+      .single();
 
     if (error) {
       toast({
+        title: "Error",
+        description: "No se pudo crear el jugador",
         variant: "destructive",
-        title: "Error al crear jugador",
-        description: error.message,
       });
       return;
     }
 
-    await fetchPlayers();
+    setPlayers([...players, player]);
   };
 
   const addEncounter = async (encounter: Encounter) => {
-    const { error } = await supabase.from("encounters").insert({
-      id: encounter.id,
-      campaign_id: encounter.campaignId,
-      title: encounter.title,
-      description: encounter.description,
-      difficulty: encounter.difficulty,
-      enemies: encounter.enemies,
-      date: encounter.date,
-    });
+    const { data, error } = await supabase
+      .from("encounters")
+      .insert({
+        id: encounter.id,
+        campaign_id: encounter.campaignId,
+        title: encounter.title,
+        description: encounter.description,
+        difficulty: encounter.difficulty,
+        enemies: encounter.enemies,
+        date: encounter.date,
+      })
+      .select()
+      .single();
 
     if (error) {
       toast({
+        title: "Error",
+        description: "No se pudo crear el encuentro",
         variant: "destructive",
-        title: "Error al crear encuentro",
-        description: error.message,
       });
       return;
     }
 
-    await fetchEncounters();
+    setEncounters([encounter, ...encounters]);
   };
 
   const updatePlayer = async (playerId: string, updatedPlayer: Partial<Player>) => {
@@ -236,14 +235,14 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
 
     if (error) {
       toast({
+        title: "Error",
+        description: "No se pudo actualizar el jugador",
         variant: "destructive",
-        title: "Error al actualizar jugador",
-        description: error.message,
       });
       return;
     }
 
-    await fetchPlayers();
+    setPlayers(players.map(p => p.id === playerId ? { ...p, ...updatedPlayer } : p));
   };
 
   const updateEncounter = async (encounterId: string, updatedEncounter: Partial<Encounter>) => {
@@ -261,14 +260,14 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
 
     if (error) {
       toast({
+        title: "Error",
+        description: "No se pudo actualizar el encuentro",
         variant: "destructive",
-        title: "Error al actualizar encuentro",
-        description: error.message,
       });
       return;
     }
 
-    await fetchEncounters();
+    setEncounters(encounters.map(e => e.id === encounterId ? { ...e, ...updatedEncounter } : e));
   };
 
   const getPlayersByCampaign = (campaignId: string) => {
@@ -292,7 +291,6 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         updateEncounter,
         getPlayersByCampaign,
         getEncountersByCampaign,
-        loading,
       }}
     >
       {children}

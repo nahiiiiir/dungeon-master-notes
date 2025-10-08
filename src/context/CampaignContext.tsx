@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "./AuthContext";
 
 export interface Player {
   id: string;
@@ -47,12 +48,15 @@ const CampaignContext = createContext<CampaignContextType | undefined>(undefined
 
 export const CampaignProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [encounters, setEncounters] = useState<Encounter[]>([]);
 
   // Load campaigns from Supabase
   useEffect(() => {
+    if (!user) return;
+
     const fetchCampaigns = async () => {
       const { data, error } = await supabase
         .from("campaigns")
@@ -78,10 +82,12 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
     };
 
     fetchCampaigns();
-  }, [toast]);
+  }, [toast, user]);
 
   // Load players from Supabase
   useEffect(() => {
+    if (!user) return;
+
     const fetchPlayers = async () => {
       const { data, error } = await supabase
         .from("players")
@@ -108,10 +114,12 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
     };
 
     fetchPlayers();
-  }, [toast]);
+  }, [toast, user]);
 
   // Load encounters from Supabase
   useEffect(() => {
+    if (!user) return;
+
     const fetchEncounters = async () => {
       const { data, error } = await supabase
         .from("encounters")
@@ -139,9 +147,11 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
     };
 
     fetchEncounters();
-  }, [toast]);
+  }, [toast, user]);
 
   const addCampaign = async (campaign: Campaign) => {
+    if (!user) return;
+
     const { data, error } = await supabase
       .from("campaigns")
       .insert({
@@ -150,6 +160,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         description: campaign.description,
         last_session: campaign.lastSession,
         status: campaign.status,
+        user_id: user.id,
       })
       .select()
       .single();
@@ -167,6 +178,8 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addPlayer = async (player: Player) => {
+    if (!user) return;
+
     const { data, error } = await supabase
       .from("players")
       .insert({
@@ -177,6 +190,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         race: player.race,
         class: player.class,
         level: player.level,
+        user_id: user.id,
       })
       .select()
       .single();
@@ -194,6 +208,8 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addEncounter = async (encounter: Encounter) => {
+    if (!user) return;
+
     const { data, error } = await supabase
       .from("encounters")
       .insert({
@@ -204,6 +220,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         difficulty: encounter.difficulty,
         enemies: encounter.enemies,
         date: encounter.date,
+        user_id: user.id,
       })
       .select()
       .single();

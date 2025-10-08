@@ -1,14 +1,23 @@
 import { useNavigate } from "react-router-dom";
 import { CampaignCard } from "@/components/CampaignCard";
 import { CreateCampaignDialog } from "@/components/CreateCampaignDialog";
-import { Scroll, Sparkles } from "lucide-react";
+import { Scroll, Sparkles, LogOut, User } from "lucide-react";
 import heroImage from "@/assets/hero-dnd.jpg";
 import { useCampaignContext } from "@/context/CampaignContext";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const { campaigns, addCampaign, getPlayersByCampaign, getEncountersByCampaign } = useCampaignContext();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+    toast.success("Sesión cerrada exitosamente");
+  };
 
   const handleCreateCampaign = (newCampaign: {
     title: string;
@@ -31,6 +40,26 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Navigation Bar */}
+      <nav className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Scroll className="h-5 w-5 text-accent" />
+            <span className="font-serif font-bold text-lg">D&D Campaign Manager</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <User className="h-4 w-4" />
+              <span>{user?.email}</span>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Cerrar Sesión
+            </Button>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
         <div 

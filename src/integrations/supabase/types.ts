@@ -23,6 +23,7 @@ export type Database = {
           status: string
           title: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -32,6 +33,7 @@ export type Database = {
           status?: string
           title: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -41,8 +43,17 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string | null
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       encounters: {
         Row: {
@@ -55,6 +66,7 @@ export type Database = {
           id: string
           title: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           campaign_id: string
@@ -66,6 +78,7 @@ export type Database = {
           id?: string
           title: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           campaign_id?: string
@@ -77,6 +90,7 @@ export type Database = {
           id?: string
           title?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -84,6 +98,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "encounters_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -99,6 +120,7 @@ export type Database = {
           player_name: string
           race: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           campaign_id: string
@@ -110,6 +132,7 @@ export type Database = {
           player_name: string
           race: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           campaign_id?: string
@@ -121,6 +144,7 @@ export type Database = {
           player_name?: string
           race?: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -130,7 +154,41 @@ export type Database = {
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "players_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

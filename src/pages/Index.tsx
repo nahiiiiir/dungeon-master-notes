@@ -73,9 +73,6 @@ const Index = () => {
         </div>
         
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <div className="flex justify-center mb-6">
-            <Scroll className="h-16 w-16 text-accent animate-pulse" />
-          </div>
           <h1 className="text-5xl md:text-7xl font-serif font-bold text-primary-foreground mb-4 drop-shadow-2xl">
             Registro de Campañas D&D
           </h1>

@@ -44,7 +44,7 @@ const CampaignDetails = () => {
   const [editingEncounter, setEditingEncounter] = useState<any>(null);
   const [editingPlayer, setEditingPlayer] = useState<any>(null);
 
-  const handleCreateEncounter = (newEncounter: {
+  const handleCreateEncounter = async (newEncounter: {
     title: string;
     description: string;
     difficulty: string;
@@ -53,7 +53,6 @@ const CampaignDetails = () => {
     if (!id) return;
     
     const encounter = {
-      id: Date.now().toString(),
       campaignId: id,
       ...newEncounter,
       date: new Date().toLocaleDateString("es-ES", {
@@ -62,11 +61,15 @@ const CampaignDetails = () => {
         year: "numeric",
       }),
     };
-    addEncounter(encounter);
-    toast.success("¡Encuentro registrado exitosamente!");
+    
+    const success = await addEncounter(encounter);
+    
+    if (success) {
+      toast.success("¡Encuentro registrado exitosamente!");
+    }
   };
 
-  const handleCreatePlayer = (newPlayer: {
+  const handleCreatePlayer = async (newPlayer: {
     playerName: string;
     characterName: string;
     race: string;
@@ -76,12 +79,15 @@ const CampaignDetails = () => {
     if (!id) return;
     
     const player = {
-      id: Date.now().toString(),
       campaignId: id,
       ...newPlayer,
     };
-    addPlayer(player);
-    toast.success("¡Jugador registrado exitosamente!");
+    
+    const success = await addPlayer(player);
+    
+    if (success) {
+      toast.success("¡Jugador registrado exitosamente!");
+    }
   };
 
   const handleUpdateEncounter = (encounterId: string, updatedData: {

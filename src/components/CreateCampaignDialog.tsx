@@ -31,8 +31,6 @@ export const CreateCampaignDialog = ({ onCreateCampaign }: CreateCampaignDialogP
       title: title.trim(),
       description: description.trim(),
     });
-
-    toast.success("¡Campaña creada exitosamente!");
     
     setTitle("");
     setDescription("");

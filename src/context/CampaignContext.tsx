@@ -35,9 +35,9 @@ interface CampaignContextType {
   campaigns: Campaign[];
   players: Player[];
   encounters: Encounter[];
-  addCampaign: (campaign: Campaign) => void;
-  addPlayer: (player: Player) => void;
-  addEncounter: (encounter: Encounter) => void;
+  addCampaign: (campaign: Omit<Campaign, 'id'>) => Promise<boolean>;
+  addPlayer: (player: Omit<Player, 'id'>) => Promise<boolean>;
+  addEncounter: (encounter: Omit<Encounter, 'id'>) => Promise<boolean>;
   updatePlayer: (playerId: string, updatedPlayer: Partial<Player>) => void;
   updateEncounter: (encounterId: string, updatedEncounter: Partial<Encounter>) => void;
   getPlayersByCampaign: (campaignId: string) => Player[];
@@ -149,13 +149,12 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
     fetchEncounters();
   }, [toast, user]);
 
-  const addCampaign = async (campaign: Campaign) => {
-    if (!user) return;
+  const addCampaign = async (campaign: Omit<Campaign, 'id'>) => {
+    if (!user) return false;
 
     const { data, error } = await supabase
       .from("campaigns")
       .insert({
-        id: campaign.id,
         title: campaign.title,
         description: campaign.description,
         last_session: campaign.lastSession,
@@ -171,19 +170,26 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         description: "No se pudo crear la campaña",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
-    setCampaigns([campaign, ...campaigns]);
+    setCampaigns([{
+      id: data.id,
+      title: data.title,
+      description: data.description || "",
+      lastSession: data.last_session || "",
+      status: data.status as "active" | "paused" | "completed",
+    }, ...campaigns]);
+    
+    return true;
   };
 
-  const addPlayer = async (player: Player) => {
-    if (!user) return;
+  const addPlayer = async (player: Omit<Player, 'id'>) => {
+    if (!user) return false;
 
     const { data, error } = await supabase
       .from("players")
       .insert({
-        id: player.id,
         campaign_id: player.campaignId,
         player_name: player.playerName,
         character_name: player.characterName,
@@ -201,19 +207,28 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         description: "No se pudo crear el jugador",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
-    setPlayers([...players, player]);
+    setPlayers([{
+      id: data.id,
+      campaignId: data.campaign_id,
+      playerName: data.player_name,
+      characterName: data.character_name,
+      race: data.race,
+      class: data.class,
+      level: data.level,
+    }, ...players]);
+    
+    return true;
   };
 
-  const addEncounter = async (encounter: Encounter) => {
-    if (!user) return;
+  const addEncounter = async (encounter: Omit<Encounter, 'id'>) => {
+    if (!user) return false;
 
     const { data, error } = await supabase
       .from("encounters")
       .insert({
-        id: encounter.id,
         campaign_id: encounter.campaignId,
         title: encounter.title,
         description: encounter.description,
@@ -231,10 +246,20 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         description: "No se pudo crear el encuentro",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
-    setEncounters([encounter, ...encounters]);
+    setEncounters([{
+      id: data.id,
+      campaignId: data.campaign_id,
+      title: data.title,
+      description: data.description || "",
+      difficulty: data.difficulty,
+      enemies: data.enemies,
+      date: data.date || "",
+    }, ...encounters]);
+    
+    return true;
   };
 
   const updatePlayer = async (playerId: string, updatedPlayer: Partial<Player>) => {

@@ -19,12 +19,11 @@ const Index = () => {
     toast.success("Sesión cerrada exitosamente");
   };
 
-  const handleCreateCampaign = (newCampaign: {
+  const handleCreateCampaign = async (newCampaign: {
     title: string;
     description: string;
   }) => {
     const campaign = {
-      id: Date.now().toString(),
       title: newCampaign.title,
       description: newCampaign.description,
       lastSession: new Date().toLocaleDateString("es-ES", {
@@ -34,8 +33,12 @@ const Index = () => {
       }),
       status: "active" as const,
     };
-    addCampaign(campaign);
-    toast.success("¡Campaña creada exitosamente!");
+    
+    const success = await addCampaign(campaign);
+    
+    if (success) {
+      toast.success("¡Campaña creada exitosamente!");
+    }
   };
 
   return (

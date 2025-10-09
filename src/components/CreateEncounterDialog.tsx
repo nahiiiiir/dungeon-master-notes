@@ -56,7 +56,6 @@ export const CreateEncounterDialog = ({
         difficulty,
         enemies: enemies.trim(),
       });
-      toast.success("¡Encuentro actualizado exitosamente!");
     } else {
       onCreateEncounter({
         title: title.trim(),
@@ -64,7 +63,6 @@ export const CreateEncounterDialog = ({
         difficulty,
         enemies: enemies.trim(),
       });
-      toast.success("¡Encuentro registrado exitosamente!");
     }
     
     setTitle("");

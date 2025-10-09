@@ -59,7 +59,6 @@ export const CreatePlayerDialog = ({
         class: characterClass.trim(),
         level,
       });
-      toast.success("¡Jugador actualizado exitosamente!");
     } else {
       onCreatePlayer({
         playerName: playerName.trim(),
@@ -68,7 +67,6 @@ export const CreatePlayerDialog = ({
         class: characterClass.trim(),
         level,
       });
-      toast.success("¡Jugador registrado exitosamente!");
     }
     
     setPlayerName("");

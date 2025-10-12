@@ -49,6 +49,8 @@ const CampaignDetails = () => {
     description: string;
     difficulty: string;
     enemies: string;
+    completed: boolean;
+    notes: string;
   }) => {
     if (!id) return;
     
@@ -95,6 +97,8 @@ const CampaignDetails = () => {
     description: string;
     difficulty: string;
     enemies: string;
+    completed: boolean;
+    notes: string;
   }) => {
     updateEncounter(encounterId, updatedData);
     setEditingEncounter(null);

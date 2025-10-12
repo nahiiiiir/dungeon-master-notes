@@ -21,6 +21,8 @@ export interface Encounter {
   difficulty: string;
   enemies: string;
   date: string;
+  completed: boolean;
+  notes: string;
 }
 
 export interface Campaign {
@@ -143,6 +145,8 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         difficulty: e.difficulty,
         enemies: e.enemies,
         date: e.date || "",
+        completed: (e as any).completed || false,
+        notes: (e as any).notes || "",
       })));
     };
 
@@ -235,6 +239,8 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         difficulty: encounter.difficulty,
         enemies: encounter.enemies,
         date: encounter.date,
+        completed: encounter.completed || false,
+        notes: encounter.notes || "",
         user_id: user.id,
       })
       .select()
@@ -257,6 +263,8 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
       difficulty: data.difficulty,
       enemies: data.enemies,
       date: data.date || "",
+      completed: (data as any).completed || false,
+      notes: (data as any).notes || "",
     }, ...encounters]);
     
     return true;
@@ -294,6 +302,8 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
     if (updatedEncounter.difficulty) updateData.difficulty = updatedEncounter.difficulty;
     if (updatedEncounter.enemies) updateData.enemies = updatedEncounter.enemies;
     if (updatedEncounter.date) updateData.date = updatedEncounter.date;
+    if (updatedEncounter.completed !== undefined) updateData.completed = updatedEncounter.completed;
+    if (updatedEncounter.notes !== undefined) updateData.notes = updatedEncounter.notes;
 
     const { error } = await supabase
       .from("encounters")

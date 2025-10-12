@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Swords } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,6 +15,8 @@ interface CreateEncounterDialogProps {
     description: string;
     difficulty: string;
     enemies: string;
+    completed: boolean;
+    notes: string;
   }) => void;
   editingEncounter?: {
     id: string;
@@ -21,12 +24,16 @@ interface CreateEncounterDialogProps {
     description: string;
     difficulty: string;
     enemies: string;
+    completed: boolean;
+    notes: string;
   } | null;
   onUpdateEncounter?: (id: string, encounter: {
     title: string;
     description: string;
     difficulty: string;
     enemies: string;
+    completed: boolean;
+    notes: string;
   }) => void;
 }
 
@@ -40,6 +47,8 @@ export const CreateEncounterDialog = ({
   const [description, setDescription] = useState(editingEncounter?.description || "");
   const [difficulty, setDifficulty] = useState(editingEncounter?.difficulty || "medium");
   const [enemies, setEnemies] = useState(editingEncounter?.enemies || "");
+  const [completed, setCompleted] = useState(editingEncounter?.completed || false);
+  const [notes, setNotes] = useState(editingEncounter?.notes || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +64,8 @@ export const CreateEncounterDialog = ({
         description: description.trim(),
         difficulty,
         enemies: enemies.trim(),
+        completed,
+        notes: notes.trim(),
       });
     } else {
       onCreateEncounter({
@@ -62,6 +73,8 @@ export const CreateEncounterDialog = ({
         description: description.trim(),
         difficulty,
         enemies: enemies.trim(),
+        completed,
+        notes: notes.trim(),
       });
     }
     
@@ -69,6 +82,8 @@ export const CreateEncounterDialog = ({
     setDescription("");
     setDifficulty("medium");
     setEnemies("");
+    setCompleted(false);
+    setNotes("");
     setOpen(false);
   };
 
@@ -79,6 +94,8 @@ export const CreateEncounterDialog = ({
       setDescription(editingEncounter.description);
       setDifficulty(editingEncounter.difficulty);
       setEnemies(editingEncounter.enemies);
+      setCompleted(editingEncounter.completed);
+      setNotes(editingEncounter.notes);
       setOpen(true);
     }
   }, [editingEncounter]);
@@ -151,6 +168,34 @@ export const CreateEncounterDialog = ({
               onChange={(e) => setEnemies(e.target.value)}
             />
           </div>
+
+          <div className="flex items-center justify-between space-x-2 pt-2">
+            <div className="space-y-0.5">
+              <Label htmlFor="completed">Encuentro Completado</Label>
+              <p className="text-sm text-muted-foreground">
+                Marca si el encuentro ya finalizó
+              </p>
+            </div>
+            <Switch
+              id="completed"
+              checked={completed}
+              onCheckedChange={setCompleted}
+            />
+          </div>
+
+          {completed && (
+            <div className="space-y-2">
+              <Label htmlFor="notes">Comentarios y Conclusión</Label>
+              <Textarea
+                id="notes"
+                placeholder="¿Cómo se desarrolló la batalla? ¿Quién ganó? ¿Hubo caídos?"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={5}
+                className="resize-none"
+              />
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>

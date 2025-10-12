@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skull, Swords, Pencil } from "lucide-react";
+import { Skull, Swords, Pencil, CheckCircle2, ScrollText } from "lucide-react";
 
 interface Encounter {
   id: string;
@@ -10,6 +10,8 @@ interface Encounter {
   difficulty: string;
   enemies: string;
   date: string;
+  completed: boolean;
+  notes: string;
 }
 
 interface EncounterCardProps {
@@ -44,6 +46,12 @@ export const EncounterCard = ({ encounter, onEdit }: EncounterCardProps) => {
             <Badge className={difficultyColors[encounter.difficulty as keyof typeof difficultyColors]}>
               {difficultyLabels[encounter.difficulty as keyof typeof difficultyLabels]}
             </Badge>
+            {encounter.completed && (
+              <Badge variant="outline" className="gap-1 bg-secondary/50 text-secondary-foreground border-secondary">
+                <CheckCircle2 className="h-3 w-3" />
+                Completado
+              </Badge>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -56,7 +64,7 @@ export const EncounterCard = ({ encounter, onEdit }: EncounterCardProps) => {
         </div>
         <CardDescription>{encounter.description}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-3">
         <div className="flex items-start gap-2 text-sm">
           <Skull className="h-4 w-4 text-muted-foreground mt-0.5" />
           <div>
@@ -64,7 +72,18 @@ export const EncounterCard = ({ encounter, onEdit }: EncounterCardProps) => {
             <p className="text-muted-foreground">{encounter.enemies}</p>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-3">{encounter.date}</p>
+        
+        {encounter.completed && encounter.notes && (
+          <div className="flex items-start gap-2 text-sm pt-2 border-t border-border/50">
+            <ScrollText className="h-4 w-4 text-accent mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p className="font-semibold text-foreground mb-1">Resultado:</p>
+              <p className="text-muted-foreground italic text-xs leading-relaxed">{encounter.notes}</p>
+            </div>
+          </div>
+        )}
+        
+        <p className="text-xs text-muted-foreground">{encounter.date}</p>
       </CardContent>
     </Card>
   );

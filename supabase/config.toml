@@ -1,1 +1,4 @@
 project_id = "djjgneqlqrglgbtpfaur"
+
+[functions.dm-assistant-chat]
+verify_jwt = true

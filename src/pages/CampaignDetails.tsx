@@ -5,7 +5,8 @@ import { CreateEncounterDialog } from "@/components/CreateEncounterDialog";
 import { CreatePlayerDialog } from "@/components/CreatePlayerDialog";
 import { EncounterCard } from "@/components/EncounterCard";
 import { PlayerCard } from "@/components/PlayerCard";
-import { ArrowLeft, Users, Calendar, Scroll, Sparkles, Swords } from "lucide-react";
+import { DmAssistantChat } from "@/components/DmAssistantChat";
+import { ArrowLeft, Users, Calendar, Scroll, Sparkles, Swords, Brain } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCampaignContext } from "@/context/CampaignContext";
@@ -43,6 +44,7 @@ const CampaignDetails = () => {
 
   const [editingEncounter, setEditingEncounter] = useState<any>(null);
   const [editingPlayer, setEditingPlayer] = useState<any>(null);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
   const handleCreateEncounter = async (newEncounter: {
     title: string;
@@ -271,6 +273,27 @@ const CampaignDetails = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Floating AI Assistant Button */}
+      <button
+        onClick={() => setIsAssistantOpen(true)}
+        className="fixed bottom-6 right-6 z-50 
+                   w-14 h-14 rounded-full 
+                   bg-primary text-primary-foreground 
+                   shadow-lg hover:shadow-xl hover:scale-110 
+                   transition-all duration-200
+                   flex items-center justify-center"
+        aria-label="Abrir Asistente del DM"
+      >
+        <Brain className="h-6 w-6" />
+      </button>
+
+      {/* AI Assistant Chat */}
+      <DmAssistantChat
+        campaignId={id!}
+        isOpen={isAssistantOpen}
+        onClose={() => setIsAssistantOpen(false)}
+      />
     </div>
   );
 };

@@ -55,39 +55,80 @@ export type Database = {
           },
         ]
       }
+      dm_chat_messages: {
+        Row: {
+          campaign_id: string
+          content: string
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_chat_messages_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       encounters: {
         Row: {
           campaign_id: string
+          completed: boolean
           created_at: string | null
           date: string | null
           description: string | null
           difficulty: string
           enemies: string
           id: string
+          notes: string | null
           title: string
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
           campaign_id: string
+          completed?: boolean
           created_at?: string | null
           date?: string | null
           description?: string | null
           difficulty: string
           enemies: string
           id?: string
+          notes?: string | null
           title: string
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           campaign_id?: string
+          completed?: boolean
           created_at?: string | null
           date?: string | null
           description?: string | null
           difficulty?: string
           enemies?: string
           id?: string
+          notes?: string | null
           title?: string
           updated_at?: string | null
           user_id?: string | null

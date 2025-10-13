@@ -171,7 +171,17 @@ IMPORTANTE:
     }
 
     const geminiData = await geminiResponse.json();
-    const assistantMessage = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from AI';
+    console.log('Gemini response data:', JSON.stringify(geminiData, null, 2));
+    
+    const assistantMessage = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!assistantMessage) {
+      console.error('No text in Gemini response. Full response:', geminiData);
+      return new Response(
+        JSON.stringify({ error: 'No response text from AI', details: geminiData }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Save user message to DB
     await supabase.from('dm_chat_messages').insert({

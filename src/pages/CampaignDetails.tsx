@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CreateEncounterDialog } from "@/components/CreateEncounterDialog";
 import { CreatePlayerDialog } from "@/components/CreatePlayerDialog";
+import { EditCampaignDialog } from "@/components/EditCampaignDialog";
 import { EncounterCard } from "@/components/EncounterCard";
 import { PlayerCard } from "@/components/PlayerCard";
 import { DmAssistantChat } from "@/components/DmAssistantChat";
@@ -34,6 +35,7 @@ const CampaignDetails = () => {
     getEncountersByCampaign,
     addPlayer,
     addEncounter,
+    updateCampaign,
     updatePlayer,
     updateEncounter
   } = useCampaignContext();
@@ -119,6 +121,11 @@ const CampaignDetails = () => {
     toast.success("¡Jugador actualizado exitosamente!");
   };
 
+  const handleUpdateCampaign = (campaignId: string, updatedData: { title: string; description: string }) => {
+    updateCampaign(campaignId, updatedData);
+    toast.success("¡Campaña actualizada exitosamente!");
+  };
+
   if (!campaign) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -154,6 +161,10 @@ const CampaignDetails = () => {
                 <Badge className={statusColors[campaign.status]}>
                   {statusLabels[campaign.status]}
                 </Badge>
+                <EditCampaignDialog 
+                  campaign={campaign} 
+                  onUpdate={handleUpdateCampaign}
+                />
               </div>
               <p className="text-muted-foreground">{campaign.description}</p>
             </div>

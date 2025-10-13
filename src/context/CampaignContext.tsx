@@ -40,6 +40,7 @@ interface CampaignContextType {
   addCampaign: (campaign: Omit<Campaign, 'id'>) => Promise<boolean>;
   addPlayer: (player: Omit<Player, 'id'>) => Promise<boolean>;
   addEncounter: (encounter: Omit<Encounter, 'id'>) => Promise<boolean>;
+  updateCampaign: (campaignId: string, updatedCampaign: Partial<Campaign>) => void;
   updatePlayer: (playerId: string, updatedPlayer: Partial<Player>) => void;
   updateEncounter: (encounterId: string, updatedEncounter: Partial<Encounter>) => void;
   getPlayersByCampaign: (campaignId: string) => Player[];
@@ -270,6 +271,28 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
     return true;
   };
 
+  const updateCampaign = async (campaignId: string, updatedCampaign: Partial<Campaign>) => {
+    const updateData: any = {};
+    if (updatedCampaign.title) updateData.title = updatedCampaign.title;
+    if (updatedCampaign.description !== undefined) updateData.description = updatedCampaign.description;
+
+    const { error } = await supabase
+      .from("campaigns")
+      .update(updateData)
+      .eq("id", campaignId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la campaña",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCampaigns(campaigns.map(c => c.id === campaignId ? { ...c, ...updatedCampaign } : c));
+  };
+
   const updatePlayer = async (playerId: string, updatedPlayer: Partial<Player>) => {
     const updateData: any = {};
     if (updatedPlayer.playerName) updateData.player_name = updatedPlayer.playerName;
@@ -339,6 +362,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         addCampaign,
         addPlayer,
         addEncounter,
+        updateCampaign,
         updatePlayer,
         updateEncounter,
         getPlayersByCampaign,

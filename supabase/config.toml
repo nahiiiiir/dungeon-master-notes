@@ -2,3 +2,6 @@ project_id = "djjgneqlqrglgbtpfaur"
 
 [functions.dm-assistant-chat]
 verify_jwt = true
+
+[functions.generate-npc-voice]
+verify_jwt = true

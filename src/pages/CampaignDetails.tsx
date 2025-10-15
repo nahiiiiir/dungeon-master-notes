@@ -7,7 +7,11 @@ import { EditCampaignDialog } from "@/components/EditCampaignDialog";
 import { EncounterCard } from "@/components/EncounterCard";
 import { PlayerCard } from "@/components/PlayerCard";
 import { DmAssistantChat } from "@/components/DmAssistantChat";
-import { ArrowLeft, Users, Calendar, Scroll, Sparkles, Swords, Brain } from "lucide-react";
+import { ArrowLeft, Users, Calendar, Scroll, Sparkles, Swords, Brain, Map } from "lucide-react";
+import { MapCard } from "@/components/MapCard";
+import { UploadMapDialog } from "@/components/UploadMapDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCampaignContext } from "@/context/CampaignContext";
@@ -29,20 +33,25 @@ const statusLabels = {
 const CampaignDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { 
     campaigns, 
     getPlayersByCampaign, 
     getEncountersByCampaign,
+    getMapsByCampaign,
     addPlayer,
     addEncounter,
+    addMap,
     updateCampaign,
     updatePlayer,
-    updateEncounter
+    updateEncounter,
+    deleteMap
   } = useCampaignContext();
   
   const campaign = campaigns.find(c => c.id === id);
   const players = id ? getPlayersByCampaign(id) : [];
   const encounters = id ? getEncountersByCampaign(id) : [];
+  const campaignMaps = id ? getMapsByCampaign(id) : [];
 
   const [editingEncounter, setEditingEncounter] = useState<any>(null);
   const [editingPlayer, setEditingPlayer] = useState<any>(null);
@@ -126,6 +135,44 @@ const CampaignDetails = () => {
     toast.success("¡Campaña actualizada exitosamente!");
   };
 
+  const handleUploadMap = async (data: { title: string; description: string; file: File }) => {
+    if (!id || !user) return;
+
+    try {
+      // Upload file to storage
+      const fileExt = data.file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('campaign-maps')
+        .upload(fileName, data.file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('campaign-maps')
+        .getPublicUrl(fileName);
+
+      // Save to database
+      const success = await addMap({
+        campaignId: id,
+        title: data.title,
+        description: data.description,
+        fileUrl: publicUrl,
+        fileType: data.file.type,
+        fileSize: data.file.size,
+      });
+
+      if (success) {
+        toast.success("¡Mapa subido exitosamente!");
+      }
+    } catch (error) {
+      toast.error("Error al subir el mapa");
+      console.error(error);
+    }
+  };
+
   if (!campaign) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -180,6 +227,10 @@ const CampaignDetails = () => {
               <span>{encounters.length} {encounters.length === 1 ? 'encuentro' : 'encuentros'}</span>
             </div>
             <div className="flex items-center gap-1">
+              <Map className="h-4 w-4" />
+              <span>{campaignMaps.length} {campaignMaps.length === 1 ? 'mapa' : 'mapas'}</span>
+            </div>
+            <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
               <span>Última sesión: {campaign.lastSession}</span>
             </div>
@@ -190,7 +241,7 @@ const CampaignDetails = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue="encounters" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
+          <TabsList className="grid w-full max-w-2xl grid-cols-3 mb-8">
             <TabsTrigger value="encounters" className="gap-2">
               <Swords className="h-4 w-4" />
               Encuentros
@@ -198,6 +249,10 @@ const CampaignDetails = () => {
             <TabsTrigger value="players" className="gap-2">
               <Users className="h-4 w-4" />
               Jugadores
+            </TabsTrigger>
+            <TabsTrigger value="maps" className="gap-2">
+              <Map className="h-4 w-4" />
+              Mapas
             </TabsTrigger>
           </TabsList>
 
@@ -277,6 +332,39 @@ const CampaignDetails = () => {
                     key={player.id} 
                     player={player} 
                     onEdit={setEditingPlayer}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Maps Tab */}
+          <TabsContent value="maps">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <Map className="h-6 w-6 text-accent" />
+                <h2 className="text-2xl font-serif font-bold text-foreground">
+                  Mapas de la Campaña
+                </h2>
+              </div>
+              <UploadMapDialog onUpload={handleUploadMap} />
+            </div>
+
+            {campaignMaps.length === 0 ? (
+              <div className="text-center py-16 bg-card rounded-lg border border-border shadow-lg">
+                <Map className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <p className="text-xl text-muted-foreground mb-6">
+                  No hay mapas registrados aún
+                </p>
+                <UploadMapDialog onUpload={handleUploadMap} />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {campaignMaps.map((map) => (
+                  <MapCard 
+                    key={map.id} 
+                    map={map} 
+                    onDelete={deleteMap}
                   />
                 ))}
               </div>

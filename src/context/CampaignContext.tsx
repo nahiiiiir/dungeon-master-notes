@@ -33,18 +33,32 @@ export interface Campaign {
   status: "active" | "paused" | "completed";
 }
 
+export interface CampaignMap {
+  id: string;
+  campaignId: string;
+  title: string;
+  description: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize?: number;
+}
+
 interface CampaignContextType {
   campaigns: Campaign[];
   players: Player[];
   encounters: Encounter[];
+  maps: CampaignMap[];
   addCampaign: (campaign: Omit<Campaign, 'id'>) => Promise<boolean>;
   addPlayer: (player: Omit<Player, 'id'>) => Promise<boolean>;
   addEncounter: (encounter: Omit<Encounter, 'id'>) => Promise<boolean>;
+  addMap: (map: Omit<CampaignMap, 'id'>) => Promise<boolean>;
   updateCampaign: (campaignId: string, updatedCampaign: Partial<Campaign>) => void;
   updatePlayer: (playerId: string, updatedPlayer: Partial<Player>) => void;
   updateEncounter: (encounterId: string, updatedEncounter: Partial<Encounter>) => void;
+  deleteMap: (mapId: string) => void;
   getPlayersByCampaign: (campaignId: string) => Player[];
   getEncountersByCampaign: (campaignId: string) => Encounter[];
+  getMapsByCampaign: (campaignId: string) => CampaignMap[];
 }
 
 const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
@@ -55,6 +69,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [encounters, setEncounters] = useState<Encounter[]>([]);
+  const [maps, setMaps] = useState<CampaignMap[]>([]);
 
   // Load campaigns from Supabase
   useEffect(() => {
@@ -353,20 +368,104 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
     return encounters.filter(e => e.campaignId === campaignId);
   };
 
+  // Load maps from Supabase
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchMaps = async () => {
+      const { data, error } = await supabase
+        .from("maps")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los mapas",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setMaps(data.map(m => ({
+        id: m.id,
+        campaignId: m.campaign_id,
+        title: m.title,
+        description: m.description || "",
+        fileUrl: m.file_url,
+        fileType: m.file_type,
+        fileSize: m.file_size || undefined,
+      })));
+    };
+
+    fetchMaps();
+  }, [toast, user]);
+
+  const addMap = async (map: Omit<CampaignMap, 'id'>) => {
+    if (!user) return false;
+
+    const { data, error } = await supabase
+      .from("maps")
+      .insert({
+        campaign_id: map.campaignId,
+        title: map.title,
+        description: map.description,
+        file_url: map.fileUrl,
+        file_type: map.fileType,
+        file_size: map.fileSize,
+        user_id: user.id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo guardar el mapa",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    setMaps([{
+      id: data.id,
+      campaignId: data.campaign_id,
+      title: data.title,
+      description: data.description || "",
+      fileUrl: data.file_url,
+      fileType: data.file_type,
+      fileSize: data.file_size || undefined,
+    }, ...maps]);
+    
+    return true;
+  };
+
+  const deleteMap = (mapId: string) => {
+    setMaps(maps.filter(m => m.id !== mapId));
+  };
+
+  const getMapsByCampaign = (campaignId: string) => {
+    return maps.filter(m => m.campaignId === campaignId);
+  };
+
   return (
     <CampaignContext.Provider
       value={{
         campaigns,
         players,
         encounters,
+        maps,
         addCampaign,
         addPlayer,
         addEncounter,
+        addMap,
         updateCampaign,
         updatePlayer,
         updateEncounter,
+        deleteMap,
         getPlayersByCampaign,
         getEncountersByCampaign,
+        getMapsByCampaign,
       }}
     >
       {children}

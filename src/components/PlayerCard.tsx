@@ -10,6 +10,9 @@ interface Player {
   race: string;
   class: string;
   level: number;
+  hp?: number;
+  ac?: number;
+  notes?: string;
 }
 
 interface PlayerCardProps {
@@ -58,6 +61,28 @@ export const PlayerCard = ({ player, onEdit }: PlayerCardProps) => {
             <span className="font-semibold text-foreground">Clase:</span>
             <span className="text-muted-foreground">{player.class || "No especificada"}</span>
           </div>
+          {(player.hp !== undefined || player.ac !== undefined) && (
+            <div className="flex items-center gap-4 text-sm pt-1">
+              {player.hp !== undefined && (
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold text-foreground">HP:</span>
+                  <span className="text-muted-foreground">{player.hp}</span>
+                </div>
+              )}
+              {player.ac !== undefined && (
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold text-foreground">AC:</span>
+                  <span className="text-muted-foreground">{player.ac}</span>
+                </div>
+              )}
+            </div>
+          )}
+          {player.notes && (
+            <div className="text-sm pt-1 border-t border-border/50 mt-2 pt-2">
+              <span className="font-semibold text-foreground">Notas:</span>
+              <p className="text-muted-foreground mt-1">{player.notes}</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -191,36 +191,45 @@ export type Database = {
       }
       players: {
         Row: {
+          ac: number | null
           campaign_id: string
           character_name: string
           class: string
           created_at: string | null
+          hp: number | null
           id: string
           level: number
+          notes: string | null
           player_name: string
           race: string
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          ac?: number | null
           campaign_id: string
           character_name: string
           class: string
           created_at?: string | null
+          hp?: number | null
           id?: string
           level?: number
+          notes?: string | null
           player_name: string
           race: string
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          ac?: number | null
           campaign_id?: string
           character_name?: string
           class?: string
           created_at?: string | null
+          hp?: number | null
           id?: string
           level?: number
+          notes?: string | null
           player_name?: string
           race?: string
           updated_at?: string | null

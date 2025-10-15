@@ -13,6 +13,9 @@ interface CreatePlayerDialogProps {
     race: string;
     class: string;
     level: number;
+    hp?: number;
+    ac?: number;
+    notes?: string;
   }) => void;
   editingPlayer?: {
     id: string;
@@ -21,6 +24,9 @@ interface CreatePlayerDialogProps {
     race: string;
     class: string;
     level: number;
+    hp?: number;
+    ac?: number;
+    notes?: string;
   } | null;
   onUpdatePlayer?: (id: string, player: {
     playerName: string;
@@ -28,6 +34,9 @@ interface CreatePlayerDialogProps {
     race: string;
     class: string;
     level: number;
+    hp?: number;
+    ac?: number;
+    notes?: string;
   }) => void;
 }
 
@@ -42,6 +51,9 @@ export const CreatePlayerDialog = ({
   const [race, setRace] = useState(editingPlayer?.race || "");
   const [characterClass, setCharacterClass] = useState(editingPlayer?.class || "");
   const [level, setLevel] = useState(editingPlayer?.level || 1);
+  const [hp, setHp] = useState(editingPlayer?.hp || "");
+  const [ac, setAc] = useState(editingPlayer?.ac || "");
+  const [notes, setNotes] = useState(editingPlayer?.notes || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +70,9 @@ export const CreatePlayerDialog = ({
         race: race.trim(),
         class: characterClass.trim(),
         level,
+        hp: hp ? parseInt(hp.toString()) : undefined,
+        ac: ac ? parseInt(ac.toString()) : undefined,
+        notes: notes.trim() || undefined,
       });
     } else {
       onCreatePlayer({
@@ -66,6 +81,9 @@ export const CreatePlayerDialog = ({
         race: race.trim(),
         class: characterClass.trim(),
         level,
+        hp: hp ? parseInt(hp.toString()) : undefined,
+        ac: ac ? parseInt(ac.toString()) : undefined,
+        notes: notes.trim() || undefined,
       });
     }
     
@@ -74,6 +92,9 @@ export const CreatePlayerDialog = ({
     setRace("");
     setCharacterClass("");
     setLevel(1);
+    setHp("");
+    setAc("");
+    setNotes("");
     setOpen(false);
   };
 
@@ -85,6 +106,9 @@ export const CreatePlayerDialog = ({
       setRace(editingPlayer.race);
       setCharacterClass(editingPlayer.class);
       setLevel(editingPlayer.level);
+      setHp(editingPlayer.hp || "");
+      setAc(editingPlayer.ac || "");
+      setNotes(editingPlayer.notes || "");
       setOpen(true);
     }
   }, [editingPlayer]);
@@ -163,6 +187,42 @@ export const CreatePlayerDialog = ({
               max="20"
               value={level}
               onChange={(e) => setLevel(parseInt(e.target.value) || 1)}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="hp">HP</Label>
+              <Input
+                id="hp"
+                type="number"
+                min="0"
+                placeholder="0"
+                value={hp}
+                onChange={(e) => setHp(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ac">AC</Label>
+              <Input
+                id="ac"
+                type="number"
+                min="0"
+                placeholder="0"
+                value={ac}
+                onChange={(e) => setAc(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Otros comentarios</Label>
+            <Input
+              id="notes"
+              placeholder="Notas adicionales sobre el personaje"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
             />
           </div>
 

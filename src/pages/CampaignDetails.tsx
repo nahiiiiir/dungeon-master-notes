@@ -57,11 +57,12 @@ const CampaignDetails = () => {
   const [editingPlayer, setEditingPlayer] = useState<any>(null);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
-  interface Enemy {
-    name: string;
-    hp: number | null;
-    ac: number | null;
-  }
+interface Enemy {
+  name: string;
+  hp: number | null;
+  ac: number | null;
+  details: string;
+}
 
   const handleCreateEncounter = async (newEncounter: {
     title: string;

@@ -13,6 +13,7 @@ interface Enemy {
   name: string;
   hp: number | null;
   ac: number | null;
+  details: string;
 }
 
 interface CreateEncounterDialogProps {
@@ -59,6 +60,7 @@ export const CreateEncounterDialog = ({
   const [currentEnemy, setCurrentEnemy] = useState("");
   const [currentHp, setCurrentHp] = useState("");
   const [currentAc, setCurrentAc] = useState("");
+  const [currentDetails, setCurrentDetails] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const handleAddEnemy = () => {
@@ -71,6 +73,7 @@ export const CreateEncounterDialog = ({
       name: currentEnemy.trim(),
       hp: currentHp ? parseInt(currentHp) : null,
       ac: currentAc ? parseInt(currentAc) : null,
+      details: currentDetails.trim(),
     };
 
     if (editingIndex !== null) {
@@ -87,6 +90,7 @@ export const CreateEncounterDialog = ({
     setCurrentEnemy("");
     setCurrentHp("");
     setCurrentAc("");
+    setCurrentDetails("");
   };
 
   const handleEditEnemy = (index: number) => {
@@ -94,6 +98,7 @@ export const CreateEncounterDialog = ({
     setCurrentEnemy(enemy.name);
     setCurrentHp(enemy.hp ? enemy.hp.toString() : "");
     setCurrentAc(enemy.ac ? enemy.ac.toString() : "");
+    setCurrentDetails(enemy.details || "");
     setEditingIndex(index);
   };
 
@@ -101,6 +106,7 @@ export const CreateEncounterDialog = ({
     setCurrentEnemy("");
     setCurrentHp("");
     setCurrentAc("");
+    setCurrentDetails("");
     setEditingIndex(null);
   };
 
@@ -148,6 +154,7 @@ export const CreateEncounterDialog = ({
     setCurrentEnemy("");
     setCurrentHp("");
     setCurrentAc("");
+    setCurrentDetails("");
     setEditingIndex(null);
     setOpen(false);
   };
@@ -163,6 +170,7 @@ export const CreateEncounterDialog = ({
       setCurrentEnemy("");
       setCurrentHp("");
       setCurrentAc("");
+      setCurrentDetails("");
       setEditingIndex(null);
       setOpen(true);
     }
@@ -231,27 +239,32 @@ export const CreateEncounterDialog = ({
             <Label>Enemigos</Label>
             <div className="space-y-2">
               {enemies.map((enemy, index) => (
-                <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                  <span className="font-semibold text-muted-foreground w-6">{index + 1}.</span>
-                  <span className="flex-1 text-sm font-medium">{enemy.name}</span>
-                  {enemy.hp !== null && <span className="text-sm text-muted-foreground">HP: {enemy.hp}</span>}
-                  {enemy.ac !== null && <span className="text-sm text-muted-foreground">AC: {enemy.ac}</span>}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEditEnemy(index)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveEnemy(index)}
-                  >
-                    ×
-                  </Button>
+                <div key={index} className="space-y-1 p-2 bg-muted rounded-md">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-muted-foreground w-6">{index + 1}.</span>
+                    <span className="flex-1 text-sm font-medium">{enemy.name}</span>
+                    {enemy.hp !== null && <span className="text-sm text-muted-foreground">HP: {enemy.hp}</span>}
+                    {enemy.ac !== null && <span className="text-sm text-muted-foreground">AC: {enemy.ac}</span>}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditEnemy(index)}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveEnemy(index)}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                  {enemy.details && (
+                    <p className="text-xs text-muted-foreground ml-8 italic">{enemy.details}</p>
+                  )}
                 </div>
               ))}
               <div className="space-y-2 p-3 border border-border rounded-md bg-card">
@@ -260,45 +273,54 @@ export const CreateEncounterDialog = ({
                     Editando enemigo #{editingIndex + 1}
                   </p>
                 )}
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Enemigo"
-                    value={currentEnemy}
-                    onChange={(e) => setCurrentEnemy(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="HP"
-                    value={currentHp}
-                    onChange={(e) => setCurrentHp(e.target.value)}
-                    className="w-20"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="AC"
-                    value={currentAc}
-                    onChange={(e) => setCurrentAc(e.target.value)}
-                    className="w-20"
-                  />
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="icon"
-                    onClick={handleAddEnemy}
-                  >
-                    {editingIndex !== null ? "✓" : "+"}
-                  </Button>
-                  {editingIndex !== null && (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enemigo"
+                      value={currentEnemy}
+                      onChange={(e) => setCurrentEnemy(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="HP"
+                      value={currentHp}
+                      onChange={(e) => setCurrentHp(e.target.value)}
+                      className="w-20"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="AC"
+                      value={currentAc}
+                      onChange={(e) => setCurrentAc(e.target.value)}
+                      className="w-20"
+                    />
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="secondary"
                       size="icon"
-                      onClick={handleCancelEdit}
+                      onClick={handleAddEnemy}
                     >
-                      ×
+                      {editingIndex !== null ? "✓" : "+"}
                     </Button>
-                  )}
+                    {editingIndex !== null && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleCancelEdit}
+                      >
+                        ×
+                      </Button>
+                    )}
+                  </div>
+                  <Textarea
+                    placeholder="Detalles (opcional)"
+                    value={currentDetails}
+                    onChange={(e) => setCurrentDetails(e.target.value)}
+                    rows={2}
+                    className="resize-none"
+                  />
                 </div>
               </div>
             </div>

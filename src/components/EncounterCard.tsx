@@ -7,6 +7,7 @@ interface Enemy {
   name: string;
   hp: number | null;
   ac: number | null;
+  details: string;
 }
 
 interface Encounter {

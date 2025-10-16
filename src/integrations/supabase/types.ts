@@ -98,7 +98,7 @@ export type Database = {
           date: string | null
           description: string | null
           difficulty: string
-          enemies: string
+          enemies: Json
           id: string
           notes: string | null
           title: string
@@ -112,7 +112,7 @@ export type Database = {
           date?: string | null
           description?: string | null
           difficulty: string
-          enemies: string
+          enemies: Json
           id?: string
           notes?: string | null
           title: string
@@ -126,7 +126,7 @@ export type Database = {
           date?: string | null
           description?: string | null
           difficulty?: string
-          enemies?: string
+          enemies?: Json
           id?: string
           notes?: string | null
           title?: string

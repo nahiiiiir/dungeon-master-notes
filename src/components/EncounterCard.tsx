@@ -3,12 +3,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skull, Swords, Pencil, CheckCircle2, ScrollText } from "lucide-react";
 
+interface Enemy {
+  name: string;
+  hp: number | null;
+  ac: number | null;
+}
+
 interface Encounter {
   id: string;
   title: string;
   description: string;
   difficulty: string;
-  enemies: string;
+  enemies: Enemy[];
   date: string;
   completed: boolean;
   notes: string;
@@ -65,12 +71,22 @@ export const EncounterCard = ({ encounter, onEdit }: EncounterCardProps) => {
         <CardDescription>{encounter.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex items-start gap-2 text-sm">
-          <Skull className="h-4 w-4 text-muted-foreground mt-0.5" />
-          <div>
-            <p className="font-semibold text-foreground">Enemigos:</p>
-            <p className="text-muted-foreground">{encounter.enemies}</p>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Swords className="h-4 w-4 text-muted-foreground" />
+            <span>Enemigos:</span>
           </div>
+          {encounter.enemies.map((enemy, index) => (
+            <div key={index} className="flex items-center gap-3 text-sm pl-6">
+              <span className="font-medium">{enemy.name}</span>
+              {enemy.hp && (
+                <span className="text-muted-foreground">HP: {enemy.hp}</span>
+              )}
+              {enemy.ac && (
+                <span className="text-muted-foreground">AC: {enemy.ac}</span>
+              )}
+            </div>
+          ))}
         </div>
         
         {encounter.completed && encounter.notes && (

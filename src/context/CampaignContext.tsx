@@ -3,6 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "./AuthContext";
 
+interface Enemy {
+  name: string;
+  hp: number | null;
+  ac: number | null;
+}
+
 export interface Player {
   id: string;
   campaignId: string;
@@ -19,7 +25,7 @@ export interface Encounter {
   title: string;
   description: string;
   difficulty: string;
-  enemies: string;
+  enemies: Enemy[];
   date: string;
   completed: boolean;
   notes: string;
@@ -159,7 +165,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         title: e.title,
         description: e.description || "",
         difficulty: e.difficulty,
-        enemies: e.enemies,
+        enemies: Array.isArray(e.enemies) ? (e.enemies as unknown as Enemy[]) : [],
         date: e.date || "",
         completed: (e as any).completed || false,
         notes: (e as any).notes || "",
@@ -248,17 +254,17 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
 
     const { data, error } = await supabase
       .from("encounters")
-      .insert({
+      .insert([{
         campaign_id: encounter.campaignId,
         title: encounter.title,
         description: encounter.description,
         difficulty: encounter.difficulty,
-        enemies: encounter.enemies,
+        enemies: encounter.enemies as any,
         date: encounter.date,
         completed: encounter.completed || false,
         notes: encounter.notes || "",
         user_id: user.id,
-      })
+      }])
       .select()
       .single();
 
@@ -277,7 +283,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
       title: data.title,
       description: data.description || "",
       difficulty: data.difficulty,
-      enemies: data.enemies,
+      enemies: Array.isArray(data.enemies) ? (data.enemies as unknown as Enemy[]) : [],
       date: data.date || "",
       completed: (data as any).completed || false,
       notes: (data as any).notes || "",

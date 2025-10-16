@@ -9,12 +9,18 @@ import { Switch } from "@/components/ui/switch";
 import { Swords } from "lucide-react";
 import { toast } from "sonner";
 
+interface Enemy {
+  name: string;
+  hp: number | null;
+  ac: number | null;
+}
+
 interface CreateEncounterDialogProps {
   onCreateEncounter: (encounter: {
     title: string;
     description: string;
     difficulty: string;
-    enemies: string;
+    enemies: Enemy[];
     completed: boolean;
     notes: string;
   }) => void;
@@ -23,7 +29,7 @@ interface CreateEncounterDialogProps {
     title: string;
     description: string;
     difficulty: string;
-    enemies: string;
+    enemies: Enemy[];
     completed: boolean;
     notes: string;
   } | null;
@@ -31,7 +37,7 @@ interface CreateEncounterDialogProps {
     title: string;
     description: string;
     difficulty: string;
-    enemies: string;
+    enemies: Enemy[];
     completed: boolean;
     notes: string;
   }) => void;
@@ -46,9 +52,35 @@ export const CreateEncounterDialog = ({
   const [title, setTitle] = useState(editingEncounter?.title || "");
   const [description, setDescription] = useState(editingEncounter?.description || "");
   const [difficulty, setDifficulty] = useState(editingEncounter?.difficulty || "medium");
-  const [enemies, setEnemies] = useState(editingEncounter?.enemies || "");
+  const [enemies, setEnemies] = useState<Enemy[]>(editingEncounter?.enemies || []);
   const [completed, setCompleted] = useState(editingEncounter?.completed || false);
   const [notes, setNotes] = useState(editingEncounter?.notes || "");
+  
+  const [currentEnemy, setCurrentEnemy] = useState("");
+  const [currentHp, setCurrentHp] = useState("");
+  const [currentAc, setCurrentAc] = useState("");
+
+  const handleAddEnemy = () => {
+    if (!currentEnemy.trim()) {
+      toast.error("Por favor ingresa el nombre del enemigo");
+      return;
+    }
+
+    const newEnemy: Enemy = {
+      name: currentEnemy.trim(),
+      hp: currentHp ? parseInt(currentHp) : null,
+      ac: currentAc ? parseInt(currentAc) : null,
+    };
+
+    setEnemies([...enemies, newEnemy]);
+    setCurrentEnemy("");
+    setCurrentHp("");
+    setCurrentAc("");
+  };
+
+  const handleRemoveEnemy = (index: number) => {
+    setEnemies(enemies.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +95,7 @@ export const CreateEncounterDialog = ({
         title: title.trim(),
         description: description.trim(),
         difficulty,
-        enemies: enemies.trim(),
+        enemies,
         completed,
         notes: notes.trim(),
       });
@@ -72,7 +104,7 @@ export const CreateEncounterDialog = ({
         title: title.trim(),
         description: description.trim(),
         difficulty,
-        enemies: enemies.trim(),
+        enemies,
         completed,
         notes: notes.trim(),
       });
@@ -81,13 +113,15 @@ export const CreateEncounterDialog = ({
     setTitle("");
     setDescription("");
     setDifficulty("medium");
-    setEnemies("");
+    setEnemies([]);
     setCompleted(false);
     setNotes("");
+    setCurrentEnemy("");
+    setCurrentHp("");
+    setCurrentAc("");
     setOpen(false);
   };
 
-  // Update form when editingEncounter changes
   useEffect(() => {
     if (editingEncounter) {
       setTitle(editingEncounter.title);
@@ -96,6 +130,9 @@ export const CreateEncounterDialog = ({
       setEnemies(editingEncounter.enemies);
       setCompleted(editingEncounter.completed);
       setNotes(editingEncounter.notes);
+      setCurrentEnemy("");
+      setCurrentHp("");
+      setCurrentAc("");
       setOpen(true);
     }
   }, [editingEncounter]);
@@ -160,13 +197,54 @@ export const CreateEncounterDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="enemies">Enemigos</Label>
-            <Input
-              id="enemies"
-              placeholder="4 Orcos, 1 Líder Orco"
-              value={enemies}
-              onChange={(e) => setEnemies(e.target.value)}
-            />
+            <Label>Enemigos</Label>
+            <div className="space-y-2">
+              {enemies.map((enemy, index) => (
+                <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                  <span className="flex-1 text-sm">{enemy.name}</span>
+                  {enemy.hp && <span className="text-sm text-muted-foreground">HP: {enemy.hp}</span>}
+                  {enemy.ac && <span className="text-sm text-muted-foreground">AC: {enemy.ac}</span>}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveEnemy(index)}
+                  >
+                    ×
+                  </Button>
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enemigo"
+                  value={currentEnemy}
+                  onChange={(e) => setCurrentEnemy(e.target.value)}
+                  className="flex-1"
+                />
+                <Input
+                  type="number"
+                  placeholder="HP"
+                  value={currentHp}
+                  onChange={(e) => setCurrentHp(e.target.value)}
+                  className="w-20"
+                />
+                <Input
+                  type="number"
+                  placeholder="AC"
+                  value={currentAc}
+                  onChange={(e) => setCurrentAc(e.target.value)}
+                  className="w-20"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon"
+                  onClick={handleAddEnemy}
+                >
+                  +
+                </Button>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center justify-between space-x-2 pt-2">

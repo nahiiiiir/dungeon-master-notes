@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -186,7 +187,7 @@ export const CreateEncounterDialog = ({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-serif">
             {editingEncounter ? "Editar Encuentro" : "Nuevo Encuentro"}
@@ -197,172 +198,174 @@ export const CreateEncounterDialog = ({
               : "Registra un nuevo encuentro de combate o desafío para esta sesión."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4 overflow-y-auto flex-1 pr-2">
-          <div className="space-y-2">
-            <Label htmlFor="title">Nombre del Encuentro</Label>
-            <Input
-              id="title"
-              placeholder="Emboscada de Orcos"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="font-serif"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
-            <Textarea
-              id="description"
-              placeholder="Los héroes son emboscados por una horda de orcos en el camino..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="difficulty">Dificultad</Label>
-            <Select value={difficulty} onValueChange={setDifficulty}>
-              <SelectTrigger id="difficulty">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="easy">Fácil</SelectItem>
-                <SelectItem value="medium">Media</SelectItem>
-                <SelectItem value="hard">Difícil</SelectItem>
-                <SelectItem value="deadly">Mortal</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Enemigos</Label>
+        <ScrollArea className="max-h-[60vh] pr-4">
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <div className="space-y-2">
-              {enemies.map((enemy, index) => (
-                <div key={index} className="space-y-1 p-2 bg-muted rounded-md">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-muted-foreground w-6">{index + 1}.</span>
-                    <span className="flex-1 text-sm font-medium">{enemy.name}</span>
-                    {enemy.hp !== null && <span className="text-sm text-muted-foreground">HP: {enemy.hp}</span>}
-                    {enemy.ac !== null && <span className="text-sm text-muted-foreground">AC: {enemy.ac}</span>}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditEnemy(index)}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveEnemy(index)}
-                    >
-                      ×
-                    </Button>
-                  </div>
-                  {enemy.details && (
-                    <p className="text-xs text-muted-foreground ml-8 italic">{enemy.details}</p>
-                  )}
-                </div>
-              ))}
-              <div className="space-y-2 p-3 border border-border rounded-md bg-card">
-                {editingIndex !== null && (
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Editando enemigo #{editingIndex + 1}
-                  </p>
-                )}
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Enemigo"
-                      value={currentEnemy}
-                      onChange={(e) => setCurrentEnemy(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="HP"
-                      value={currentHp}
-                      onChange={(e) => setCurrentHp(e.target.value)}
-                      className="w-20"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="AC"
-                      value={currentAc}
-                      onChange={(e) => setCurrentAc(e.target.value)}
-                      className="w-20"
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="icon"
-                      onClick={handleAddEnemy}
-                    >
-                      {editingIndex !== null ? "✓" : "+"}
-                    </Button>
-                    {editingIndex !== null && (
+              <Label htmlFor="title">Nombre del Encuentro</Label>
+              <Input
+                id="title"
+                placeholder="Emboscada de Orcos"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="font-serif"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Descripción</Label>
+              <Textarea
+                id="description"
+                placeholder="Los héroes son emboscados por una horda de orcos en el camino..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="difficulty">Dificultad</Label>
+              <Select value={difficulty} onValueChange={setDifficulty}>
+                <SelectTrigger id="difficulty">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="easy">Fácil</SelectItem>
+                  <SelectItem value="medium">Media</SelectItem>
+                  <SelectItem value="hard">Difícil</SelectItem>
+                  <SelectItem value="deadly">Mortal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Enemigos</Label>
+              <div className="space-y-2">
+                {enemies.map((enemy, index) => (
+                  <div key={index} className="space-y-1 p-2 bg-muted rounded-md">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-muted-foreground w-6">{index + 1}.</span>
+                      <span className="flex-1 text-sm font-medium">{enemy.name}</span>
+                      {enemy.hp !== null && <span className="text-sm text-muted-foreground">HP: {enemy.hp}</span>}
+                      {enemy.ac !== null && <span className="text-sm text-muted-foreground">AC: {enemy.ac}</span>}
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
-                        onClick={handleCancelEdit}
+                        size="sm"
+                        onClick={() => handleEditEnemy(index)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveEnemy(index)}
                       >
                         ×
                       </Button>
+                    </div>
+                    {enemy.details && (
+                      <p className="text-xs text-muted-foreground ml-8 italic">{enemy.details}</p>
                     )}
                   </div>
-                  <Textarea
-                    placeholder="Detalles (opcional)"
-                    value={currentDetails}
-                    onChange={(e) => setCurrentDetails(e.target.value)}
-                    rows={2}
-                    className="resize-none"
-                  />
+                ))}
+                <div className="space-y-2 p-3 border border-border rounded-md bg-card">
+                  {editingIndex !== null && (
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Editando enemigo #{editingIndex + 1}
+                    </p>
+                  )}
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enemigo"
+                        value={currentEnemy}
+                        onChange={(e) => setCurrentEnemy(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Input
+                        type="number"
+                        placeholder="HP"
+                        value={currentHp}
+                        onChange={(e) => setCurrentHp(e.target.value)}
+                        className="w-20"
+                      />
+                      <Input
+                        type="number"
+                        placeholder="AC"
+                        value={currentAc}
+                        onChange={(e) => setCurrentAc(e.target.value)}
+                        className="w-20"
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="icon"
+                        onClick={handleAddEnemy}
+                      >
+                        {editingIndex !== null ? "✓" : "+"}
+                      </Button>
+                      {editingIndex !== null && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleCancelEdit}
+                        >
+                          ×
+                        </Button>
+                      )}
+                    </div>
+                    <Textarea
+                      placeholder="Detalles (opcional)"
+                      value={currentDetails}
+                      onChange={(e) => setCurrentDetails(e.target.value)}
+                      rows={2}
+                      className="resize-none"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center justify-between space-x-2 pt-2">
-            <div className="space-y-0.5">
-              <Label htmlFor="completed">Encuentro Completado</Label>
-              <p className="text-sm text-muted-foreground">
-                Marca si el encuentro ya finalizó
-              </p>
-            </div>
-            <Switch
-              id="completed"
-              checked={completed}
-              onCheckedChange={setCompleted}
-            />
-          </div>
-
-          {completed && (
-            <div className="space-y-2">
-              <Label htmlFor="notes">Comentarios y Conclusión</Label>
-              <Textarea
-                id="notes"
-                placeholder="¿Cómo se desarrolló la batalla? ¿Quién ganó? ¿Hubo caídos?"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={5}
-                className="resize-none"
+            <div className="flex items-center justify-between space-x-2 pt-2">
+              <div className="space-y-0.5">
+                <Label htmlFor="completed">Encuentro Completado</Label>
+                <p className="text-sm text-muted-foreground">
+                  Marca si el encuentro ya finalizó
+                </p>
+              </div>
+              <Switch
+                id="completed"
+                checked={completed}
+                onCheckedChange={setCompleted}
               />
             </div>
-          )}
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit" variant="default">
-              {editingEncounter ? "Actualizar Encuentro" : "Registrar Encuentro"}
-            </Button>
-          </div>
-        </form>
+            {completed && (
+              <div className="space-y-2">
+                <Label htmlFor="notes">Comentarios y Conclusión</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="¿Cómo se desarrolló la batalla? ¿Quién ganó? ¿Hubo caídos?"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={5}
+                  className="resize-none"
+                />
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 pb-2">
+              <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" variant="default">
+                {editingEncounter ? "Actualizar Encuentro" : "Registrar Encuentro"}
+              </Button>
+            </div>
+          </form>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

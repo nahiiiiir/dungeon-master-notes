@@ -186,7 +186,7 @@ export const CreateEncounterDialog = ({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl font-serif">
             {editingEncounter ? "Editar Encuentro" : "Nuevo Encuentro"}
@@ -197,7 +197,7 @@ export const CreateEncounterDialog = ({
               : "Registra un nuevo encuentro de combate o desafío para esta sesión."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4 overflow-y-auto flex-1 pr-2">
           <div className="space-y-2">
             <Label htmlFor="title">Nombre del Encuentro</Label>
             <Input

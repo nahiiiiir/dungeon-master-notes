@@ -279,6 +279,42 @@ export type Database = {
         }
         Relationships: []
       }
+      sessions: {
+        Row: {
+          campaign_id: string
+          completed: boolean
+          created_at: string | null
+          encounter_ids: string[] | null
+          id: string
+          notes: string | null
+          title: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          campaign_id: string
+          completed?: boolean
+          created_at?: string | null
+          encounter_ids?: string[] | null
+          id?: string
+          notes?: string | null
+          title: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          completed?: boolean
+          created_at?: string | null
+          encounter_ids?: string[] | null
+          id?: string
+          notes?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

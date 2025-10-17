@@ -7,8 +7,10 @@ import { EditCampaignDialog } from "@/components/EditCampaignDialog";
 import { EncounterCard } from "@/components/EncounterCard";
 import { PlayerCard } from "@/components/PlayerCard";
 import { DmAssistantChat } from "@/components/DmAssistantChat";
-import { ArrowLeft, Users, Calendar, Scroll, Sparkles, Swords, Brain, Map } from "lucide-react";
+import { ArrowLeft, Users, Calendar, Scroll, Sparkles, Swords, Brain, Map, BookOpen } from "lucide-react";
 import { MapCard } from "@/components/MapCard";
+import { SessionCard } from "@/components/SessionCard";
+import { CreateSessionDialog } from "@/components/CreateSessionDialog";
 import { UploadMapDialog } from "@/components/UploadMapDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -39,12 +41,15 @@ const CampaignDetails = () => {
     getPlayersByCampaign, 
     getEncountersByCampaign,
     getMapsByCampaign,
+    getSessionsByCampaign,
     addPlayer,
     addEncounter,
     addMap,
+    addSession,
     updateCampaign,
     updatePlayer,
     updateEncounter,
+    updateSession,
     deleteMap
   } = useCampaignContext();
   
@@ -52,9 +57,11 @@ const CampaignDetails = () => {
   const players = id ? getPlayersByCampaign(id) : [];
   const encounters = id ? getEncountersByCampaign(id) : [];
   const campaignMaps = id ? getMapsByCampaign(id) : [];
+  const sessions = id ? getSessionsByCampaign(id) : [];
 
   const [editingEncounter, setEditingEncounter] = useState<any>(null);
   const [editingPlayer, setEditingPlayer] = useState<any>(null);
+  const [editingSession, setEditingSession] = useState<any>(null);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
 interface Enemy {
@@ -180,6 +187,45 @@ interface Enemy {
     }
   };
 
+  const handleCreateSession = async (sessionData: {
+    title: string;
+    notes: string;
+    encounter_ids: string[];
+    completed: boolean;
+  }) => {
+    if (!id) return;
+    
+    const session = {
+      campaignId: id,
+      title: sessionData.title,
+      notes: sessionData.notes,
+      encounterIds: sessionData.encounter_ids,
+      completed: sessionData.completed,
+    };
+    
+    const success = await addSession(session);
+    
+    if (success) {
+      toast.success("¡Sesión registrada exitosamente!");
+    }
+  };
+
+  const handleUpdateSession = (sessionId: string, sessionData: {
+    title: string;
+    notes: string;
+    encounter_ids: string[];
+    completed: boolean;
+  }) => {
+    updateSession(sessionId, {
+      title: sessionData.title,
+      notes: sessionData.notes,
+      encounterIds: sessionData.encounter_ids,
+      completed: sessionData.completed,
+    });
+    setEditingSession(null);
+    toast.success("¡Sesión actualizada exitosamente!");
+  };
+
   if (!campaign) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -238,6 +284,10 @@ interface Enemy {
               <span>{campaignMaps.length} {campaignMaps.length === 1 ? 'mapa' : 'mapas'}</span>
             </div>
             <div className="flex items-center gap-1">
+              <BookOpen className="h-4 w-4" />
+              <span>{sessions.length} {sessions.length === 1 ? 'sesión' : 'sesiones'}</span>
+            </div>
+            <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
               <span>Última sesión: {campaign.lastSession}</span>
             </div>
@@ -247,8 +297,12 @@ interface Enemy {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <Tabs defaultValue="encounters" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-3 mb-8">
+        <Tabs defaultValue="sessions" className="w-full">
+          <TabsList className="grid w-full max-w-3xl grid-cols-4 mb-8">
+            <TabsTrigger value="sessions" className="gap-2">
+              <BookOpen className="h-4 w-4" />
+              Sesiones
+            </TabsTrigger>
             <TabsTrigger value="encounters" className="gap-2">
               <Swords className="h-4 w-4" />
               Encuentros
@@ -262,6 +316,64 @@ interface Enemy {
               Mapas
             </TabsTrigger>
           </TabsList>
+
+          {/* Sessions Tab */}
+          <TabsContent value="sessions">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <BookOpen className="h-6 w-6 text-accent" />
+                <h2 className="text-2xl font-serif font-bold text-foreground">
+                  Sesiones de la Campaña
+                </h2>
+              </div>
+              <CreateSessionDialog 
+                open={!!editingSession && editingSession !== 'new'}
+                onOpenChange={(open) => !open && setEditingSession(null)}
+                onSubmit={editingSession && editingSession !== 'new' 
+                  ? (data) => handleUpdateSession(editingSession.id, data)
+                  : handleCreateSession
+                }
+                editingSession={editingSession && editingSession !== 'new' ? editingSession : null}
+                encounters={encounters}
+              />
+              {!editingSession && (
+                <CreateSessionDialog 
+                  open={editingSession === 'new'}
+                  onOpenChange={(open) => open ? setEditingSession('new') : setEditingSession(null)}
+                  onSubmit={handleCreateSession}
+                  editingSession={null}
+                  encounters={encounters}
+                />
+              )}
+            </div>
+
+            {sessions.length === 0 ? (
+              <div className="text-center py-16 bg-card rounded-lg border border-border shadow-lg">
+                <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <p className="text-xl text-muted-foreground mb-6">
+                  No hay sesiones registradas aún
+                </p>
+                <CreateSessionDialog 
+                  open={false}
+                  onOpenChange={(open) => open && setEditingSession('new')}
+                  onSubmit={handleCreateSession}
+                  editingSession={null}
+                  encounters={encounters}
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sessions.map((session) => (
+                  <SessionCard 
+                    key={session.id} 
+                    session={session} 
+                    encounters={encounters}
+                    onEdit={setEditingSession}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
           {/* Encounters Tab */}
           <TabsContent value="encounters">

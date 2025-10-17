@@ -50,22 +50,35 @@ export interface CampaignMap {
   fileSize?: number;
 }
 
+export interface Session {
+  id: string;
+  campaignId: string;
+  title: string;
+  notes: string;
+  encounterIds: string[];
+  completed: boolean;
+}
+
 interface CampaignContextType {
   campaigns: Campaign[];
   players: Player[];
   encounters: Encounter[];
   maps: CampaignMap[];
+  sessions: Session[];
   addCampaign: (campaign: Omit<Campaign, 'id'>) => Promise<boolean>;
   addPlayer: (player: Omit<Player, 'id'>) => Promise<boolean>;
   addEncounter: (encounter: Omit<Encounter, 'id'>) => Promise<boolean>;
   addMap: (map: Omit<CampaignMap, 'id'>) => Promise<boolean>;
+  addSession: (session: Omit<Session, 'id'>) => Promise<boolean>;
   updateCampaign: (campaignId: string, updatedCampaign: Partial<Campaign>) => void;
   updatePlayer: (playerId: string, updatedPlayer: Partial<Player>) => void;
   updateEncounter: (encounterId: string, updatedEncounter: Partial<Encounter>) => void;
+  updateSession: (sessionId: string, updatedSession: Partial<Session>) => void;
   deleteMap: (mapId: string) => void;
   getPlayersByCampaign: (campaignId: string) => Player[];
   getEncountersByCampaign: (campaignId: string) => Encounter[];
   getMapsByCampaign: (campaignId: string) => CampaignMap[];
+  getSessionsByCampaign: (campaignId: string) => Session[];
 }
 
 const CampaignContext = createContext<CampaignContextType | undefined>(undefined);
@@ -77,6 +90,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [encounters, setEncounters] = useState<Encounter[]>([]);
   const [maps, setMaps] = useState<CampaignMap[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
 
   // Load campaigns from Supabase
   useEffect(() => {
@@ -455,6 +469,103 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
     return maps.filter(m => m.campaignId === campaignId);
   };
 
+  // Load sessions from Supabase
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchSessions = async () => {
+      const { data, error } = await supabase
+        .from("sessions")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar las sesiones",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSessions(data.map(s => ({
+        id: s.id,
+        campaignId: s.campaign_id,
+        title: s.title,
+        notes: s.notes || "",
+        encounterIds: s.encounter_ids || [],
+        completed: s.completed,
+      })));
+    };
+
+    fetchSessions();
+  }, [toast, user]);
+
+  const addSession = async (session: Omit<Session, 'id'>) => {
+    if (!user) return false;
+
+    const { data, error } = await supabase
+      .from("sessions")
+      .insert({
+        campaign_id: session.campaignId,
+        title: session.title,
+        notes: session.notes,
+        encounter_ids: session.encounterIds,
+        completed: session.completed,
+        user_id: user.id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo crear la sesión",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    setSessions([{
+      id: data.id,
+      campaignId: data.campaign_id,
+      title: data.title,
+      notes: data.notes || "",
+      encounterIds: data.encounter_ids || [],
+      completed: data.completed,
+    }, ...sessions]);
+    
+    return true;
+  };
+
+  const updateSession = async (sessionId: string, updatedSession: Partial<Session>) => {
+    const updateData: any = {};
+    if (updatedSession.title) updateData.title = updatedSession.title;
+    if (updatedSession.notes !== undefined) updateData.notes = updatedSession.notes;
+    if (updatedSession.encounterIds) updateData.encounter_ids = updatedSession.encounterIds;
+    if (updatedSession.completed !== undefined) updateData.completed = updatedSession.completed;
+
+    const { error } = await supabase
+      .from("sessions")
+      .update(updateData)
+      .eq("id", sessionId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la sesión",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSessions(sessions.map(s => s.id === sessionId ? { ...s, ...updatedSession } : s));
+  };
+
+  const getSessionsByCampaign = (campaignId: string) => {
+    return sessions.filter(s => s.campaignId === campaignId);
+  };
+
   return (
     <CampaignContext.Provider
       value={{
@@ -462,17 +573,21 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         players,
         encounters,
         maps,
+        sessions,
         addCampaign,
         addPlayer,
         addEncounter,
         addMap,
+        addSession,
         updateCampaign,
         updatePlayer,
         updateEncounter,
+        updateSession,
         deleteMap,
         getPlayersByCampaign,
         getEncountersByCampaign,
         getMapsByCampaign,
+        getSessionsByCampaign,
       }}
     >
       {children}

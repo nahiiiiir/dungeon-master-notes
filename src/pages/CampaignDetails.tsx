@@ -64,6 +64,13 @@ const CampaignDetails = () => {
   const [editingSession, setEditingSession] = useState<any>(null);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
+  const handleTabChange = (value: string) => {
+    // Limpiar estados de edición al cambiar de pestaña
+    setEditingEncounter(null);
+    setEditingPlayer(null);
+    setEditingSession(null);
+  };
+
 interface Enemy {
   name: string;
   hp: number | null;
@@ -297,7 +304,7 @@ interface Enemy {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <Tabs defaultValue="sessions" className="w-full">
+        <Tabs defaultValue="sessions" className="w-full" onValueChange={handleTabChange}>
           <TabsList className="grid w-full max-w-3xl grid-cols-4 mb-8">
             <TabsTrigger value="sessions" className="gap-2">
               <BookOpen className="h-4 w-4" />

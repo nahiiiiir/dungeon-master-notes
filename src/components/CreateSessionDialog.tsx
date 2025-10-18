@@ -19,6 +19,7 @@ interface Encounter {
   id: string;
   title: string;
   completed: boolean;
+  notes?: string;
 }
 
 interface CreateSessionDialogProps {
@@ -29,6 +30,7 @@ interface CreateSessionDialogProps {
     notes: string;
     encounter_ids: string[];
     completed: boolean;
+    encounterNotes?: { [key: string]: string };
   }) => void;
   editingSession?: Session | null;
   encounters: Encounter[];
@@ -45,6 +47,7 @@ export const CreateSessionDialog = ({
   const [notes, setNotes] = useState("");
   const [selectedEncounters, setSelectedEncounters] = useState<string[]>([]);
   const [completed, setCompleted] = useState(false);
+  const [encounterNotes, setEncounterNotes] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (editingSession) {
@@ -52,13 +55,24 @@ export const CreateSessionDialog = ({
       setNotes(editingSession.notes || "");
       setSelectedEncounters(editingSession.encounterIds || []);
       setCompleted(editingSession.completed);
+      
+      // Inicializar las notas de encuentros si ya existen
+      const initialNotes: { [key: string]: string } = {};
+      editingSession.encounterIds?.forEach(id => {
+        const encounter = encounters.find(e => e.id === id);
+        if (encounter?.notes) {
+          initialNotes[id] = encounter.notes;
+        }
+      });
+      setEncounterNotes(initialNotes);
     } else {
       setTitle("");
       setNotes("");
       setSelectedEncounters([]);
       setCompleted(false);
+      setEncounterNotes({});
     }
-  }, [editingSession, open]);
+  }, [editingSession, open, encounters]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,13 +82,15 @@ export const CreateSessionDialog = ({
       title: title.trim(),
       notes: notes.trim(),
       encounter_ids: selectedEncounters,
-      completed
+      completed,
+      encounterNotes: completed ? encounterNotes : undefined
     });
 
     setTitle("");
     setNotes("");
     setSelectedEncounters([]);
     setCompleted(false);
+    setEncounterNotes({});
   };
 
   const handleEncounterToggle = (encounterId: string) => {
@@ -152,6 +168,34 @@ export const CreateSessionDialog = ({
                 Marcar como completada
               </Label>
             </div>
+
+            {completed && selectedEncounters.length > 0 && (
+              <div className="space-y-3 pt-4 border-t">
+                <Label className="text-base">Comentarios y Conclusión por Encuentro</Label>
+                {selectedEncounters.map((encounterId) => {
+                  const encounter = encounters.find(e => e.id === encounterId);
+                  if (!encounter) return null;
+                  
+                  return (
+                    <div key={encounterId} className="space-y-2">
+                      <Label htmlFor={`notes-${encounterId}`} className="text-sm font-normal">
+                        {encounter.title}
+                      </Label>
+                      <Textarea
+                        id={`notes-${encounterId}`}
+                        value={encounterNotes[encounterId] || ""}
+                        onChange={(e) => setEncounterNotes(prev => ({
+                          ...prev,
+                          [encounterId]: e.target.value
+                        }))}
+                        placeholder="Escribe el resultado y conclusiones del encuentro..."
+                        className="min-h-[80px]"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </form>
         </ScrollArea>
         <DialogFooter>

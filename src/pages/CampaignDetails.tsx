@@ -199,6 +199,7 @@ interface Enemy {
     notes: string;
     encounter_ids: string[];
     completed: boolean;
+    encounterNotes?: { [key: string]: string };
   }) => {
     if (!id) return;
     
@@ -213,15 +214,29 @@ interface Enemy {
     const success = await addSession(session);
     
     if (success) {
+      // Si la sesión está completada, marcar los encuentros como completados y actualizar sus notas
+      if (sessionData.completed && sessionData.encounter_ids.length > 0) {
+        for (const encounterId of sessionData.encounter_ids) {
+          const encounterToUpdate = encounters.find(e => e.id === encounterId);
+          if (encounterToUpdate) {
+            await updateEncounter(encounterId, {
+              ...encounterToUpdate,
+              completed: true,
+              notes: sessionData.encounterNotes?.[encounterId] || encounterToUpdate.notes
+            });
+          }
+        }
+      }
       toast.success("¡Sesión registrada exitosamente!");
     }
   };
 
-  const handleUpdateSession = (sessionId: string, sessionData: {
+  const handleUpdateSession = async (sessionId: string, sessionData: {
     title: string;
     notes: string;
     encounter_ids: string[];
     completed: boolean;
+    encounterNotes?: { [key: string]: string };
   }) => {
     updateSession(sessionId, {
       title: sessionData.title,
@@ -229,6 +244,21 @@ interface Enemy {
       encounterIds: sessionData.encounter_ids,
       completed: sessionData.completed,
     });
+    
+    // Si la sesión se marca como completada, actualizar los encuentros
+    if (sessionData.completed && sessionData.encounter_ids.length > 0) {
+      for (const encounterId of sessionData.encounter_ids) {
+        const encounterToUpdate = encounters.find(e => e.id === encounterId);
+        if (encounterToUpdate) {
+          await updateEncounter(encounterId, {
+            ...encounterToUpdate,
+            completed: true,
+            notes: sessionData.encounterNotes?.[encounterId] || encounterToUpdate.notes
+          });
+        }
+      }
+    }
+    
     setEditingSession(null);
     toast.success("¡Sesión actualizada exitosamente!");
   };

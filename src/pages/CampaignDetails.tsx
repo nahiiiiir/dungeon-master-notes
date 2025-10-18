@@ -326,26 +326,28 @@ interface Enemy {
                   Sesiones de la Campaña
                 </h2>
               </div>
+              <Button onClick={() => setEditingSession('new')}>
+                Crear sesión
+              </Button>
+            </div>
+
+            <CreateSessionDialog 
+              open={editingSession === 'new'}
+              onOpenChange={(open) => !open && setEditingSession(null)}
+              onSubmit={handleCreateSession}
+              editingSession={null}
+              encounters={encounters}
+            />
+            
+            {editingSession && editingSession !== 'new' && (
               <CreateSessionDialog 
-                open={!!editingSession && editingSession !== 'new'}
+                open={true}
                 onOpenChange={(open) => !open && setEditingSession(null)}
-                onSubmit={editingSession && editingSession !== 'new' 
-                  ? (data) => handleUpdateSession(editingSession.id, data)
-                  : handleCreateSession
-                }
-                editingSession={editingSession && editingSession !== 'new' ? editingSession : null}
+                onSubmit={(data) => handleUpdateSession(editingSession.id, data)}
+                editingSession={editingSession}
                 encounters={encounters}
               />
-              {!editingSession && (
-                <CreateSessionDialog 
-                  open={editingSession === 'new'}
-                  onOpenChange={(open) => open ? setEditingSession('new') : setEditingSession(null)}
-                  onSubmit={handleCreateSession}
-                  editingSession={null}
-                  encounters={encounters}
-                />
-              )}
-            </div>
+            )}
 
             {sessions.length === 0 ? (
               <div className="text-center py-16 bg-card rounded-lg border border-border shadow-lg">
@@ -353,13 +355,9 @@ interface Enemy {
                 <p className="text-xl text-muted-foreground mb-6">
                   No hay sesiones registradas aún
                 </p>
-                <CreateSessionDialog 
-                  open={false}
-                  onOpenChange={(open) => open && setEditingSession('new')}
-                  onSubmit={handleCreateSession}
-                  editingSession={null}
-                  encounters={encounters}
-                />
+                <Button onClick={() => setEditingSession('new')}>
+                  Crear sesión
+                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

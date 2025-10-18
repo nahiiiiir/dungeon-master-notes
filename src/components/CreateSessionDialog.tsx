@@ -105,100 +105,102 @@ export const CreateSessionDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>
             {editingSession ? "Editar sesión" : "Crear nueva sesión"}
           </DialogTitle>
         </DialogHeader>
-        <ScrollArea className="flex-1 pr-4 -mr-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Sesión *</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ej: Sesión 1: el primer contacto entre los aventureros"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notas</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Escribe la historia de la sesión..."
-                className="min-h-[120px]"
-              />
-            </div>
-
-            {availableEncounters.length > 0 && (
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full px-1">
+            <form onSubmit={handleSubmit} className="space-y-4 pr-4">
               <div className="space-y-2">
-                <Label>Encuentros</Label>
-                <div className="border rounded-md p-3 space-y-2 max-h-[200px] overflow-y-auto">
-                  {availableEncounters.map((encounter) => (
-                    <div key={encounter.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={encounter.id}
-                        checked={selectedEncounters.includes(encounter.id)}
-                        onCheckedChange={() => handleEncounterToggle(encounter.id)}
-                      />
-                      <Label
-                        htmlFor={encounter.id}
-                        className="text-sm font-normal cursor-pointer flex-1"
-                      >
-                        {encounter.title}
-                      </Label>
-                    </div>
-                  ))}
+                <Label htmlFor="title">Sesión *</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Ej: Sesión 1: el primer contacto entre los aventureros"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notas</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Escribe la historia de la sesión..."
+                  className="min-h-[120px]"
+                />
+              </div>
+
+              {availableEncounters.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Encuentros</Label>
+                  <div className="border rounded-md p-3 space-y-2 max-h-[200px] overflow-y-auto">
+                    {availableEncounters.map((encounter) => (
+                      <div key={encounter.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={encounter.id}
+                          checked={selectedEncounters.includes(encounter.id)}
+                          onCheckedChange={() => handleEncounterToggle(encounter.id)}
+                        />
+                        <Label
+                          htmlFor={encounter.id}
+                          className="text-sm font-normal cursor-pointer flex-1"
+                        >
+                          {encounter.title}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="completed"
-                checked={completed}
-                onCheckedChange={(checked) => setCompleted(checked as boolean)}
-              />
-              <Label htmlFor="completed" className="cursor-pointer">
-                Marcar como completada
-              </Label>
-            </div>
-
-            {completed && selectedEncounters.length > 0 && (
-              <div className="space-y-3 pt-4 border-t">
-                <Label className="text-base">Comentarios y Conclusión por Encuentro</Label>
-                {selectedEncounters.map((encounterId) => {
-                  const encounter = encounters.find(e => e.id === encounterId);
-                  if (!encounter) return null;
-                  
-                  return (
-                    <div key={encounterId} className="space-y-2">
-                      <Label htmlFor={`notes-${encounterId}`} className="text-sm font-normal">
-                        {encounter.title}
-                      </Label>
-                      <Textarea
-                        id={`notes-${encounterId}`}
-                        value={encounterNotes[encounterId] || ""}
-                        onChange={(e) => setEncounterNotes(prev => ({
-                          ...prev,
-                          [encounterId]: e.target.value
-                        }))}
-                        placeholder="Escribe el resultado y conclusiones del encuentro..."
-                        className="min-h-[80px]"
-                      />
-                    </div>
-                  );
-                })}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="completed"
+                  checked={completed}
+                  onCheckedChange={(checked) => setCompleted(checked as boolean)}
+                />
+                <Label htmlFor="completed" className="cursor-pointer">
+                  Marcar como completada
+                </Label>
               </div>
-            )}
-          </form>
-        </ScrollArea>
-        <DialogFooter className="flex-shrink-0">
+
+              {completed && selectedEncounters.length > 0 && (
+                <div className="space-y-3 pt-4 border-t">
+                  <Label className="text-base">Comentarios y Conclusión por Encuentro</Label>
+                  {selectedEncounters.map((encounterId) => {
+                    const encounter = encounters.find(e => e.id === encounterId);
+                    if (!encounter) return null;
+                    
+                    return (
+                      <div key={encounterId} className="space-y-2">
+                        <Label htmlFor={`notes-${encounterId}`} className="text-sm font-normal">
+                          {encounter.title}
+                        </Label>
+                        <Textarea
+                          id={`notes-${encounterId}`}
+                          value={encounterNotes[encounterId] || ""}
+                          onChange={(e) => setEncounterNotes(prev => ({
+                            ...prev,
+                            [encounterId]: e.target.value
+                          }))}
+                          placeholder="Escribe el resultado y conclusiones del encuentro..."
+                          className="min-h-[80px]"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </form>
+          </ScrollArea>
+        </div>
+        <DialogFooter className="flex-shrink-0 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>

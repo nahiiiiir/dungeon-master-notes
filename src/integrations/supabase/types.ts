@@ -287,6 +287,7 @@ export type Database = {
           encounter_ids: string[] | null
           id: string
           notes: string | null
+          session_date: string | null
           title: string
           updated_at: string | null
           user_id: string | null
@@ -298,6 +299,7 @@ export type Database = {
           encounter_ids?: string[] | null
           id?: string
           notes?: string | null
+          session_date?: string | null
           title: string
           updated_at?: string | null
           user_id?: string | null
@@ -309,6 +311,7 @@ export type Database = {
           encounter_ids?: string[] | null
           id?: string
           notes?: string | null
+          session_date?: string | null
           title?: string
           updated_at?: string | null
           user_id?: string | null

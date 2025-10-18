@@ -6,6 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface Session {
   id: string;
@@ -31,6 +37,7 @@ interface CreateSessionDialogProps {
     encounter_ids: string[];
     completed: boolean;
     encounterNotes?: { [key: string]: string };
+    session_date?: Date;
   }) => void;
   editingSession?: Session | null;
   encounters: Encounter[];
@@ -48,6 +55,7 @@ export const CreateSessionDialog = ({
   const [selectedEncounters, setSelectedEncounters] = useState<string[]>([]);
   const [completed, setCompleted] = useState(false);
   const [encounterNotes, setEncounterNotes] = useState<{ [key: string]: string }>({});
+  const [sessionDate, setSessionDate] = useState<Date>();
 
   useEffect(() => {
     if (editingSession) {
@@ -83,7 +91,8 @@ export const CreateSessionDialog = ({
       notes: notes.trim(),
       encounter_ids: selectedEncounters,
       completed,
-      encounterNotes: completed ? encounterNotes : undefined
+      encounterNotes: completed ? encounterNotes : undefined,
+      session_date: completed ? sessionDate : undefined
     });
 
     setTitle("");
@@ -91,6 +100,7 @@ export const CreateSessionDialog = ({
     setSelectedEncounters([]);
     setCompleted(false);
     setEncounterNotes({});
+    setSessionDate(undefined);
   };
 
   const handleEncounterToggle = (encounterId: string) => {
@@ -194,6 +204,35 @@ export const CreateSessionDialog = ({
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {completed && (
+              <div className="space-y-2 pt-4 border-t">
+                <Label>Fecha de la sesión</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !sessionDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {sessionDate ? format(sessionDate, "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={sessionDate}
+                      onSelect={setSessionDate}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             )}
           </form>

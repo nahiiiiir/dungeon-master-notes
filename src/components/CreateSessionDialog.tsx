@@ -105,13 +105,14 @@ export const CreateSessionDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
             {editingSession ? "Editar sesión" : "Crear nueva sesión"}
           </DialogTitle>
         </DialogHeader>
-        <ScrollArea className="flex-1 pr-4 -mr-4">\n          <form onSubmit={handleSubmit} className="space-y-4 pr-4">
+        <ScrollArea className="max-h-[60vh] pr-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Sesión *</Label>
               <Input

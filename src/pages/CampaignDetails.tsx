@@ -200,6 +200,7 @@ interface Enemy {
     encounter_ids: string[];
     completed: boolean;
     encounterNotes?: { [key: string]: string };
+    session_date?: Date;
   }) => {
     if (!id) return;
     
@@ -209,6 +210,7 @@ interface Enemy {
       notes: sessionData.notes,
       encounterIds: sessionData.encounter_ids,
       completed: sessionData.completed,
+      sessionDate: sessionData.session_date,
     };
     
     const success = await addSession(session);
@@ -220,9 +222,12 @@ interface Enemy {
           const encounterToUpdate = encounters.find(e => e.id === encounterId);
           if (encounterToUpdate) {
             await updateEncounter(encounterId, {
-              ...encounterToUpdate,
+              title: encounterToUpdate.title,
+              description: encounterToUpdate.description,
+              difficulty: encounterToUpdate.difficulty,
+              enemies: encounterToUpdate.enemies,
               completed: true,
-              notes: sessionData.encounterNotes?.[encounterId] || encounterToUpdate.notes
+              notes: sessionData.encounterNotes?.[encounterId] || encounterToUpdate.notes || ""
             });
           }
         }
@@ -237,12 +242,14 @@ interface Enemy {
     encounter_ids: string[];
     completed: boolean;
     encounterNotes?: { [key: string]: string };
+    session_date?: Date;
   }) => {
     updateSession(sessionId, {
       title: sessionData.title,
       notes: sessionData.notes,
       encounterIds: sessionData.encounter_ids,
       completed: sessionData.completed,
+      sessionDate: sessionData.session_date,
     });
     
     // Si la sesión se marca como completada, actualizar los encuentros
@@ -251,9 +258,12 @@ interface Enemy {
         const encounterToUpdate = encounters.find(e => e.id === encounterId);
         if (encounterToUpdate) {
           await updateEncounter(encounterId, {
-            ...encounterToUpdate,
+            title: encounterToUpdate.title,
+            description: encounterToUpdate.description,
+            difficulty: encounterToUpdate.difficulty,
+            enemies: encounterToUpdate.enemies,
             completed: true,
-            notes: sessionData.encounterNotes?.[encounterId] || encounterToUpdate.notes
+            notes: sessionData.encounterNotes?.[encounterId] || encounterToUpdate.notes || ""
           });
         }
       }

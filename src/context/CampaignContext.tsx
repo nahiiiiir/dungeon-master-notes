@@ -57,6 +57,7 @@ export interface Session {
   notes: string;
   encounterIds: string[];
   completed: boolean;
+  sessionDate?: Date | null;
 }
 
 interface CampaignContextType {
@@ -495,6 +496,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
         notes: s.notes || "",
         encounterIds: s.encounter_ids || [],
         completed: s.completed,
+        sessionDate: s.session_date ? new Date(s.session_date) : null,
       })));
     };
 
@@ -506,14 +508,15 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
 
     const { data, error } = await supabase
       .from("sessions")
-      .insert({
+      .insert([{
         campaign_id: session.campaignId,
         title: session.title,
         notes: session.notes,
         encounter_ids: session.encounterIds,
         completed: session.completed,
+        session_date: session.sessionDate ? session.sessionDate.toISOString().split('T')[0] : null,
         user_id: user.id,
-      })
+      }])
       .select()
       .single();
 
@@ -533,6 +536,7 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
       notes: data.notes || "",
       encounterIds: data.encounter_ids || [],
       completed: data.completed,
+      sessionDate: data.session_date ? new Date(data.session_date) : null,
     }, ...sessions]);
     
     return true;
@@ -544,6 +548,11 @@ export const CampaignProvider = ({ children }: { children: ReactNode }) => {
     if (updatedSession.notes !== undefined) updateData.notes = updatedSession.notes;
     if (updatedSession.encounterIds) updateData.encounter_ids = updatedSession.encounterIds;
     if (updatedSession.completed !== undefined) updateData.completed = updatedSession.completed;
+    if (updatedSession.sessionDate !== undefined) {
+      updateData.session_date = updatedSession.sessionDate 
+        ? (updatedSession.sessionDate instanceof Date ? updatedSession.sessionDate.toISOString().split('T')[0] : updatedSession.sessionDate)
+        : null;
+    }
 
     const { error } = await supabase
       .from("sessions")
